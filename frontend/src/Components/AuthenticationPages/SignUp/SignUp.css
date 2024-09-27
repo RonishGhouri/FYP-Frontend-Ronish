@@ -102,3 +102,9 @@
   font-size: 0.9rem;
   margin-bottom: 20px;
 }
+
+.success-msg {
+  color: green;
+  font-weight: bold;
+  margin-top: 10px;
+}

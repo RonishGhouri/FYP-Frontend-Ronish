@@ -9,8 +9,12 @@ import Feature from "./Feature/Feature.jsx";
 import Contact from "./Contact/Contact.jsx";
 import Footer from "./Footer/Footer.jsx";
 import Login from "../AuthenticationPages/LogIn/Login.jsx";
-import SignUp from "../AuthenticationPages/SignUp/SignUp.jsx";  // Import the SignUp component
+import SignUp from "../AuthenticationPages/SignUp/SignUp.jsx"; 
+import PasswordReset from '../AuthenticationPages/PasswordReset/PasswordReset.jsx'; 
 import ArtistWelcome from "../Artist/ArtistWelcome.jsx";
+import ArtistManagerWelcome from "../ArtistManager/ArtistManagerWelcome.jsx";
+import ConsumerWelcome from "../Consumer/ConsumerWelcome.jsx";
+import ManagerWelcome from "../Manager/ManagerWelcome.jsx";
 import CompanyWelcome from "../Company/CompanyWelcome.jsx";
 
 function Index() {
@@ -43,8 +47,12 @@ function Index() {
         />
         <Route path="/login" element={<Login />} />  {/* Route for Login */}
         <Route path="/signup" element={<SignUp />} /> {/* Route for SignUp */}
-        <Route path="/artist-welcome" element={<ArtistWelcome />} />
-        <Route path="/company-welcome" element={<CompanyWelcome />} />
+        <Route path="/artistwelcome" element={<ArtistWelcome />} />
+        <Route path="/companywelcome" element={<CompanyWelcome />} />
+        <Route path="/artistmanagerwelcome" element={<ArtistManagerWelcome />} />
+        <Route path="/consumerwelcome" element={<ConsumerWelcome />} />  {/* Fixed consumer route */}
+        <Route path="/managerwelcome" element={<ManagerWelcome />} />  {/* Fixed manager route */}
+        <Route path="/password-reset" element={<PasswordReset />} />
       </Routes>
     </div>
   );

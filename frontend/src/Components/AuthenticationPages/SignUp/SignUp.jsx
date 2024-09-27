@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Navbar from '../AuthNavbar/AuthNavbar'
 import './SignUp.css'; // Import updated SignUp-specific CSS
 
@@ -10,33 +10,27 @@ const SignUp = () => {
   const [role, setRole] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false); // Track success state
+  const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
-    if (!role) {
-      setError('Please select a role.');
-      setLoading(false);
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long.');
-      setLoading(false);
-      return;
-    }
+    setSuccess(false); // Reset success message
 
     try {
       const requestData = { email, password, role };
       const response = await axios.post('http://localhost:8000/accounts/signup/', requestData);
-      localStorage.setItem('access_token', response.data.access);
-      localStorage.setItem('refresh_token', response.data.refresh);
-      console.log('Signup successful:', response.data);
+      if (response.status === 201) {
+        setSuccess(true);
+        setTimeout(() => {
+          navigate('/login'); // Redirect to login after 2 seconds
+        }, 2000);
+      }
     } catch (err) {
       if (err.response && err.response.data) {
-        setError(err.response.data.detail || 'Signup failed');
+        setError(err.response.data.email || err.response.data.password || 'Signup failed');
       } else {
         setError('Signup failed. Please try again.');
       }
@@ -47,11 +41,12 @@ const SignUp = () => {
 
   return (
     <div className="auth-page-container">
-      <Navba/>
+      <Navbar/>
       <div className="auth-form-wrapper">
         <h2>Create an Account</h2>
         <p className="subheading">Join us today</p>
         {error && <p className="error-msg">{error}</p>}
+        {success && <p className="success-msg">Signup successful! Redirecting to login...</p>} {/* Success Message */}
         <form onSubmit={handleSignup}>
           <input
             type="email"
