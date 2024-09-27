@@ -1,8 +1,8 @@
 import React from "react";
 import "./Footer.css";
-import i1 from "../../assets/inst.jpeg";
-import i2 from "../../assets/in.png";
-import i3 from "../../assets/fb.jpg";
+import i1 from "../../../assets/inst.jpeg";
+import i2 from "../../../assets/in.png";
+import i3 from "../../../assets/fb.jpg";
 
 const Footer = () => {
   return (

@@ -1,10 +1,10 @@
 import React from 'react'
 import './Contact.css'
-import image from '../../assets/msg-icon.png'
-import mail from '../../assets/mail-icon.png'
-import phone from '../../assets/phone-icon.png'
-import address from '../../assets/location-icon.png'
-import white from '../../assets/white-arrow.png'
+import image from '../../../assets/msg-icon.png'
+import mail from '../../../assets/mail-icon.png'
+import phone from '../../../assets/phone-icon.png'
+import address from '../../../assets/location-icon.png'
+import white from '../../../assets/white-arrow.png'
 
 const Contact = () => {
 

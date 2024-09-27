@@ -1,8 +1,8 @@
 import React from "react";
 import "./Pricing.css";
-import p1 from "../../assets/budget.jpg";
-import p2 from "../../assets/no_signup_fees.jpg";
-import p3 from "../../assets/fees.jpg";
+import p1 from "../../../assets/budget.jpg";
+import p2 from "../../../assets/no_signup_fees.jpg";
+import p3 from "../../../assets/fees.jpg";
 
 const Pricing = () => {
   return (
