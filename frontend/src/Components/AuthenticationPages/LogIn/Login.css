@@ -8,12 +8,12 @@
   padding-top: 80px;        /* Offset to avoid navbar overlap */
   border: 1px solid #e0e0e0;
   box-shadow: 0 10px 25px rgba(0, 123, 255, 0.8);  /* Shadow for elevation */
-  border-radius: 12px; 
+  border-radius: 12px;  
 }
 
 .auth-form-wrapper {
   width: 360px;
-  padding: 40px;
+  padding: 20px;            /* Reduced padding for a more compact look */
   background: #ffffff;
   /* Add subtle border and box shadow */
   border: 1px solid #e0e0e0;
@@ -62,7 +62,7 @@
 /* On focus, border and shadow effect */
 .auth-input:focus {
   outline: none;
-  border-color: #333; /* Change border to blue on focus */
+  border-color: #333; /* Change border color on focus */
 }
 
 .auth-btn {
@@ -101,4 +101,10 @@
   color: red;
   font-size: 0.9rem;
   margin-bottom: 20px;
+}
+
+.success-msg {
+  color: green;
+  font-weight: bold;
+  margin-top: 10px;
 }

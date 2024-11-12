@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 
 import Navbar from "./Navbar/Navbar";
 import Home from "./Home/Home.jsx";
@@ -9,18 +9,41 @@ import Feature from "./Feature/Feature.jsx";
 import Contact from "./Contact/Contact.jsx";
 import Footer from "./Footer/Footer.jsx";
 import Login from "../AuthenticationPages/LogIn/Login.jsx";
-import SignUp from "../AuthenticationPages/SignUp/SignUp.jsx"; 
-import PasswordReset from '../AuthenticationPages/PasswordReset/PasswordReset.jsx'; 
-import ArtistWelcome from "../Artist/ArtistWelcome.jsx";
-import ArtistManagerWelcome from "../ArtistManager/ArtistManagerWelcome.jsx";
-import ConsumerWelcome from "../Consumer/ConsumerWelcome.jsx";
-import ManagerWelcome from "../Manager/ManagerWelcome.jsx";
-import CompanyWelcome from "../Company/CompanyWelcome.jsx";
+import SignUp from "../AuthenticationPages/SignUp/SignUp.jsx";
+import PasswordReset from "../AuthenticationPages/PasswordReset/PasswordReset.jsx";
+import NewPassword from "../AuthenticationPages/NewPassword/NewPassword.jsx";
+import ClientDashboard from "../Client/ClientDashboard.jsx";
+import ClientProfile from "../Client/ClientProfile.jsx";
+import Manager from "../Manager/Manager.jsx";
+
+import RequireAuth from "../AuthenticationPages/RequireAuth";
+
+/* Import the newly created artist management components */
+import ArtistDashboard from "../Artist/artist/ArtistDashboard.jsx";
+import ArtistProfile from "../Artist/artist/ArtistProfile.jsx";
+import ArtistBookings from "../Artist/artist/ArtistBookings";
+import ArtistEvents from "../Artist/artist/ArtistEvents";
+import ArtistContent from "../Artist/artist/ArtistContent";
+import ArtistPayment from "../Artist/artist/ArtistPayment";
+import ArtistChat from "../Artist/artist/ArtistChat";
+import ClientChat from "../Client/ClientChat.jsx";
+import ClientBrowserArtist from "../Client/ClientBrowserArtist.jsx";
+import ClientEvent from "../Client/ClientEvent.jsx";
+import ClientBooking from "../Client/ClientBooking.jsx";
 
 function Index() {
+  const location = useLocation(); // Get the current path
+
+  // Check if the current route starts with "/artist"
+  const isArtistRoute = location.pathname.startsWith("/artist");
+
+  const isClientRoute = location.pathname.startsWith("/client");
+
   return (
     <div>
-      <Navbar />
+      {/* Conditionally render Navbar only if not in artist-related routes */}
+      {!isArtistRoute && !isClientRoute && <Navbar />}
+
       <Routes>
         <Route
           path="/"
@@ -45,14 +68,135 @@ function Index() {
             </div>
           }
         />
-        <Route path="/login" element={<Login />} />  {/* Route for Login */}
-        <Route path="/signup" element={<SignUp />} /> {/* Route for SignUp */}
-        <Route path="/artistwelcome" element={<ArtistWelcome />} />
-        <Route path="/companywelcome" element={<CompanyWelcome />} />
-        <Route path="/artistmanagerwelcome" element={<ArtistManagerWelcome />} />
-        <Route path="/consumerwelcome" element={<ConsumerWelcome />} />  {/* Fixed consumer route */}
-        <Route path="/managerwelcome" element={<ManagerWelcome />} />  {/* Fixed manager route */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/manager" element={<Manager />} />
         <Route path="/password-reset" element={<PasswordReset />} />
+        <Route path="/reset/:uidb64/:token" element={<NewPassword />} />
+
+        {/* Artist-specific routes */}
+        <Route
+          path="/artist/"
+          element={
+            <RequireAuth>
+              <ArtistDashboard />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/artist/profile"
+          element={
+            <RequireAuth>
+              <ArtistProfile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/artist/bookings"
+          element={
+            <RequireAuth>
+              <ArtistBookings />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/artist/events"
+          element={
+            <RequireAuth>
+              <ArtistEvents />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/artist/content"
+          element={
+            <RequireAuth>
+              <ArtistContent />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/artist/payment"
+          element={
+            <RequireAuth>
+              <ArtistPayment />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/artist/chats"
+          element={
+            <RequireAuth>
+              <ArtistChat />
+            </RequireAuth>
+          }
+        />
+        {/* Other role dashboards */}
+
+        <Route
+          path="/client/"
+          element={
+            <RequireAuth>
+              <ClientDashboard />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/client/profile"
+          element={
+            <RequireAuth>
+              <ClientProfile />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/client/chats"
+          element={
+            <RequireAuth>
+              <ClientChat />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/client/artists"
+          element={
+            <RequireAuth>
+              <ClientBrowserArtist />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/client/events"
+          element={
+            <RequireAuth>
+              <ClientEvent />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/client/bookings"
+          element={
+            <RequireAuth>
+              <ClientBooking />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/client/payments"
+          element={
+            <RequireAuth>
+              <ClientBooking />
+            </RequireAuth>
+          }
+        />
       </Routes>
     </div>
   );

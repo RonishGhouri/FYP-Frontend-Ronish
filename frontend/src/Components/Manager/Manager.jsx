@@ -1,6 +1,6 @@
 import React from 'react'
 
-function ManagerWelcome() {
+function Manager() {
   return (
     <div>
       <h1>Welcome, Manager!</h1>
@@ -9,4 +9,4 @@ function ManagerWelcome() {
   )
 }
 
-export default ManagerWelcome
+export default Manager

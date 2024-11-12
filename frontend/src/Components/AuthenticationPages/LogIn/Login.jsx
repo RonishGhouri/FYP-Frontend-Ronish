@@ -1,80 +1,72 @@
 import React, { useState } from 'react';
+import { useNavigate, Link, redirect } from 'react-router-dom';
 import axios from 'axios';
-import { useNavigate, Link } from 'react-router-dom';
-import Navbar from '../AuthNavbar/AuthNavbar';  // Assuming you have a Navbar component
-import './Login.css';  // Assuming you have specific styles for login
+import Navbar from '../AuthNavbar/AuthNavbar';
+import './Login.css';
 
 const Login = () => {
-  const [email, setEmail] = useState('');       // State for email input
-  const [password, setPassword] = useState(''); // State for password input
-  const [error, setError] = useState('');       // State for error messages
-  const [loading, setLoading] = useState(false);// State for loading spinner
-  const navigate = useNavigate();               // React Router hook for navigation
+  const [username, setUsername] = useState(''); // Ensure that you're logging in with the username, not email
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);                           // Set loading state to true
-    setError('');                               // Clear previous errors
+    setLoading(true);
+    setError('');
 
-    // Validate that email and password are filled in
-    if (!email || !password) {
+    // Ensure username and password fields are not empty
+    if (!username || !password) {
       setError('Please fill in all the fields');
       setLoading(false);
       return;
     }
 
+    // API Call to Django Backend (JWT login)
     try {
-      // Make a POST request to the login endpoint with email and password
-      const response = await axios.post('http://localhost:8000/accounts/login/', { 
-        email, 
-        password 
+      const response = await axios.post('http://localhost:8000/api/auth/login/', {
+        username,  // Make sure this matches the backend's expected 'username'
+        password,
       });
 
-      // Handle the response if login is successful
-      if (response.data && response.data.access) {
-        localStorage.setItem('access_token', response.data.access);
-        localStorage.setItem('refresh_token', response.data.refresh);
-        localStorage.setItem('role', response.data.role);
+      // Assuming backend returns access and refresh tokens, and user role
+      const { access, refresh, role } = response.data;
 
-        // Redirect based on the user role
-        switch(response.data.role) {
-          case 'artist':
-            navigate('/artistwelcome');
-            break;
-          case 'artist_manager':
-            navigate('/artistmanagerwelcome');
-            break;
-          case 'company':
-            navigate('/companywelcome');
-            break;
-          case 'manager':
-            navigate('/managerwelcome');
-            break;
-          case 'consumer':
-            navigate('/consumerwelcome');
-            break;
-          default:
-            setError('Unknown user role');
-            break;
-        }
-      } else {
-        setError('Invalid credentials');
+      // Store tokens and user role in localStorage
+      localStorage.setItem('access', access);
+      localStorage.setItem('refresh', refresh);
+      localStorage.setItem('username', username);
+      localStorage.setItem('userRole', role);
+
+      // Redirect user based on their role
+      switch (role) {
+        case 'artist':
+          navigate('/artist');
+          break;
+        case 'manager':
+          navigate('/manager');
+          break;
+        case 'client':  // Assuming 'customer' is the role instead of 'consumer'
+          navigate('/client');
+          break;
+        default:
+          setError('Invalid user role');
+          break;
       }
+
     } catch (err) {
-      // Handle errors from the server
+      // Log the full error response for debugging
+      console.error('Error during login:', err.response);
+
+      // Handle the error based on response from the backend
       if (err.response && err.response.data) {
-        if (err.response.status === 400) {
-          setError('Email or password is incorrect.');
-        } else if (err.response.status === 404) {
-          setError('User not found.');
-        } else {
-          setError(err.response.data.detail || 'Login failed. Please try again later.');
-        }
+        setError(err.response.data.detail || 'Invalid username or password');
       } else {
-        setError('Login failed. Please try again later.');
+        setError('An unexpected error occurred. Please try again.');
       }
-    } finally {
-      setLoading(false); // Stop loading spinner
+
+      setLoading(false);
     }
   };
 
@@ -84,17 +76,20 @@ const Login = () => {
       <div className="auth-form-wrapper">
         <h2>Welcome Back</h2>
         <p className="subheading">Log in to your account</p>
-        {error && <p className="error-msg">{error}</p>} {/* Display error message */}
-        
-        {/* Login Form */}
+
+        {/* Display error message */}
+        {error && <p className="error-msg">{error}</p>}
+
+        {/* Login form */}
         <form onSubmit={handleLogin}>
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
             required
             className="auth-input"
+            autoComplete="username"
           />
           <input
             type="password"
@@ -103,18 +98,16 @@ const Login = () => {
             placeholder="Password"
             required
             className="auth-input"
+            autoComplete="current-password"
           />
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'} {/* Show loading text when login is in progress */}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
-        {/* Forgot password link */}
         <p className="auth-footer">
           Forgot your password? <Link to="/password-reset" className="auth-link">Reset it here</Link>
         </p>
-
-        {/* Signup Link */}
         <p className="auth-footer">
           Don't have an account? <Link to="/signup" className="auth-link">Sign Up</Link>
         </p>
