@@ -6,7 +6,9 @@
   border-left: 1px solid #ddd;
   border-radius: 10px;
   overflow: hidden;
+  margin-top: 20px;
 }
+
 
 .artist-chat-chats {
   width: 27.35%;

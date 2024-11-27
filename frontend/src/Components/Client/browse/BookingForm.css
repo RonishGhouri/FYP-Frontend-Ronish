@@ -1,0 +1,133 @@
+/* Booking Form Overlay */
+.booking-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  overflow: hidden;
+}
+
+/* Booking Form Modal */
+.booking-form-modal {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 520px;
+  width: 90%;
+  max-height: 80vh; /* Restrict modal height to 80% of viewport */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden; /* Ensure the close button is not affected by scrolling */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollable Content Area */
+.booking-form-content {
+  overflow-y: auto; /* Scrollable content */
+  padding: 25px 30px;
+  max-height: calc(80vh - 50px); /* Adjust height to account for the close button */
+}
+
+/* Close Button */
+.modal-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 22px;
+  font-weight: bold;
+  color: #555;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 10; /* Ensure it stays above all content */
+}
+
+.modal-close-btn:hover {
+  color: #e63946;
+  transform: scale(1.1);
+}
+
+/* Title */
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 22px;
+  color: #333;
+}
+
+/* Form Group */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #444;
+  font-weight: 500;
+}
+
+/* Inputs and Textareas */
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Confirm Button */
+.confirm-booking-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #e63946;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.confirm-booking-btn:hover {
+  background-color: #d32f2f;
+  transform: scale(1.02);
+}
+
+/* Scrollbar Styling (Optional) */
+.booking-form-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.booking-form-content::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+.booking-form-content::-webkit-scrollbar-thumb:hover {
+  background-color: #aaa;
+}

@@ -13,23 +13,24 @@ import SignUp from "../AuthenticationPages/SignUp/SignUp.jsx";
 import PasswordReset from "../AuthenticationPages/PasswordReset/PasswordReset.jsx";
 import NewPassword from "../AuthenticationPages/NewPassword/NewPassword.jsx";
 import ClientDashboard from "../Client/ClientDashboard.jsx";
-import ClientProfile from "../Client/ClientProfile.jsx";
+import ClientProfile from "../Client/profile/ClientProfile.jsx";
 import Manager from "../Manager/Manager.jsx";
 
 import RequireAuth from "../AuthenticationPages/RequireAuth";
 
 /* Import the newly created artist management components */
 import ArtistDashboard from "../Artist/artist/ArtistDashboard.jsx";
-import ArtistProfile from "../Artist/artist/ArtistProfile.jsx";
+import ArtistProfile from "../Artist/artist/profile/ArtistProfile.jsx";
 import ArtistBookings from "../Artist/artist/ArtistBookings";
 import ArtistEvents from "../Artist/artist/ArtistEvents";
 import ArtistContent from "../Artist/artist/ArtistContent";
 import ArtistPayment from "../Artist/artist/ArtistPayment";
 import ArtistChat from "../Artist/artist/ArtistChat";
 import ClientChat from "../Client/ClientChat.jsx";
-import ClientBrowserArtist from "../Client/ClientBrowserArtist.jsx";
+import ClientBrowserArtist from "../Client/browse/ClientBrowserArtist.jsx";
 import ClientEvent from "../Client/ClientEvent.jsx";
 import ClientBooking from "../Client/ClientBooking.jsx";
+import ClientPayment from "../Client/ClientPayment.jsx";
 
 function Index() {
   const location = useLocation(); // Get the current path
@@ -148,7 +149,7 @@ function Index() {
           path="/client/profile"
           element={
             <RequireAuth>
-              <ClientProfile />
+              <ClientProfile/>
             </RequireAuth>
           }
         />
@@ -193,7 +194,7 @@ function Index() {
           path="/client/payments"
           element={
             <RequireAuth>
-              <ClientBooking />
+              <ClientPayment/>
             </RequireAuth>
           }
         />

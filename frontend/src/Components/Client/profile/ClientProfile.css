@@ -1,22 +1,22 @@
-/* Artist Dashboard Layout */
-.artist-dashboard {
+/* client Dashboard Layout */
+.client-dashboard {
   display: flex;
   height: 100vh;
 }
 
-.artist-main-dashboard {
+.client-main-dashboard {
   display: flex;
   flex: 1;
   flex-direction: column;
 }
 
 .menu-section {
-  width: 295px;
+  width: 297px;
   background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  height: 83.431vh;
+  height: 83.5vh;
   position: fixed;
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
@@ -55,12 +55,8 @@
   font-size: 1.3em;
 }
 
-.profile-section {
-  width: 80%;
-  margin-left: 70px;
-}
 
-.artist-profile-section {
+.client-profile-section {
   flex: 1;
   background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
   padding: 20px;
@@ -106,9 +102,6 @@
   margin-bottom: 10px;
 }
 
-.file-input {
-  display: block;
-}
 
 /* Profile Picture Section */
 .profile-picture-wrapper {
@@ -142,12 +135,9 @@
   text-decoration: underline;
 }
 
-.file-input {
-  display: none;
-}
 
 /* General Form Layout */
-.artist-profile-section {
+.client-profile-section {
   flex: 1;
   padding: 20px;
   background-color: #f7f7f7;
@@ -412,24 +402,8 @@ input[type="radio"] {
 }
 
 /* Style for the password input field with the eye icon inside */
-.password-field {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
 
-.password-field input {
-  width: 100%;
-  padding-right: 40px; /* Add space for the icon */
-}
 
-.password-toggle-icon {
-  position: absolute;
-  right: 10px;
-  cursor: pointer;
-  font-size: 18px;
-  color: #888;
-}
 
 /* Certification Section */
 .certification-section {
@@ -568,7 +542,7 @@ input[type="radio"] {
     width: 200px;
   }
 
-  .artist-profile-section {
+  .client-profile-section {
     margin-left: 220px;
   }
 

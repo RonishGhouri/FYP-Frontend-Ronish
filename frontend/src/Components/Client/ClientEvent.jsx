@@ -9,7 +9,7 @@ function ClientEvent() {
       <ClientSidebar />
       <div className="client-main-dashboard">
         <ClientHeader />
-
+        <div>Event</div>
       </div>
     </div>
   )

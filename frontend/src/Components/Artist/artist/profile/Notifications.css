@@ -1,0 +1,36 @@
+.profile-section {
+  width: 80%;
+  margin-left: 70px;
+}
+
+.form-section {
+  margin-bottom: 20px;
+}
+
+.form-section label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form-section button {
+  background: #212ea0;
+  color: white;
+}
+
+.form-section button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+}
+
+.save-button {
+  background: #212ea0;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.save-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+}

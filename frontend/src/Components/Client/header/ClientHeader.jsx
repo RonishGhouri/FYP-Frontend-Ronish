@@ -1,18 +1,21 @@
-import { FaBell, FaSearch } from "react-icons/fa";
-import "./ClientHeader.css";
 import React, { useState, useEffect, useRef } from "react";
+import { FaBell, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import "./ClientHeader.css";
 
-const ClientHeader = () => {
+const ClientHeader = ({ onSearch, pageContext }) => {
   const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState("");
   const [greeting, setGreeting] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const dropdownRef = useRef(null); // Reference for the notification dropdown
-  const bellIconRef = useRef(null); // Reference for the bell icon
+  const [searchInput, setSearchInput] = useState("");
+  const [placeholder, setPlaceholder] = useState("Search for anything...");
+  const dropdownRef = useRef(null);
+  const bellIconRef = useRef(null);
   const navigate = useNavigate();
 
+  // Set greeting based on time
   useEffect(() => {
     const getPakistaniTime = () => {
       const currentDate = new Date();
@@ -21,14 +24,11 @@ const ClientHeader = () => {
         hour: "numeric",
         hour12: false,
       };
-      const timeInPakistan = new Intl.DateTimeFormat("en-US", options).format(
-        currentDate
-      );
+      const timeInPakistan = new Intl.DateTimeFormat("en-US", options).format(currentDate);
       return parseInt(timeInPakistan);
     };
 
     const currentHour = getPakistaniTime();
-
     if (currentHour < 12) {
       setGreeting("Morning");
     } else if (currentHour >= 12 && currentHour < 17) {
@@ -36,54 +36,68 @@ const ClientHeader = () => {
     } else {
       setGreeting("Evening");
     }
+  }, []);
 
+  // Load user data and notifications
+  useEffect(() => {
     const storedUsername = localStorage.getItem("username");
     const storedProfilePic = localStorage.getItem("profilePic");
-
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-
-    // Handle profile picture
-    if (storedProfilePic) {
-      setProfilePic(storedProfilePic);
-    } else {
-      setProfilePic("https://via.placeholder.com/40");
-    }
-
     const storedNotifications = JSON.parse(localStorage.getItem("notifications"));
+
+    setUsername(storedUsername || "User");
+    setProfilePic(storedProfilePic || "https://via.placeholder.com/40");
+
     if (storedNotifications) {
       setNotifications(storedNotifications);
     } else {
       const initialNotifications = [
         { id: 1, type: "chat", message: "New message from Customer 1", isUnread: true },
-        { id: 2, type: "event", message: "New event booking: 'Art Expo 2024'", isUnread: true },
+        { id: 2, type: "event", message: "New event booking confirmed", isUnread: true },
         { id: 3, type: "payment", message: "Payment received for event", isUnread: true },
         { id: 4, type: "content", message: "New content uploaded successfully", isUnread: false },
       ];
       setNotifications(initialNotifications);
       localStorage.setItem("notifications", JSON.stringify(initialNotifications));
     }
-
-    // Set up event listener to monitor changes in localStorage (for real-time profile pic update)
-    const handleStorageChange = (e) => {
-      if (e.key === "profilePic") {
-        setProfilePic(e.newValue);
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
   }, []);
 
-  const toggleNotifications = () => {
-    setShowNotifications((prev) => !prev); // Toggles open/close
+  // Dynamic placeholder based on page context
+  useEffect(() => {
+    switch (pageContext) {
+      case "Browse Artists":
+        setPlaceholder("Search for artists...");
+        break;
+      case "Manage Profile":
+        setPlaceholder("Search in profile settings...");
+        break;
+      case "Manage Bookings":
+        setPlaceholder("Search bookings...");
+        break;
+      case "Chats":
+        setPlaceholder("Search chat history...");
+        break;
+      default:
+        setPlaceholder("Search for anything...");
+        break;
+    }
+  }, [pageContext]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchInput(e.target.value);
+    if (onSearch) {
+      onSearch(e.target.value);
+    }
   };
 
+  // Toggle notifications dropdown
+  const toggleNotifications = () => {
+    setShowNotifications((prev) => !prev);
+  };
+
+  // Mark all notifications as read
   const markAllAsRead = () => {
-    const updatedNotifications = notifications.map(notification => ({
+    const updatedNotifications = notifications.map((notification) => ({
       ...notification,
       isUnread: false,
     }));
@@ -91,6 +105,7 @@ const ClientHeader = () => {
     localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
   };
 
+  // Handle notification click
   const handleNotificationClick = (notification) => {
     const updatedNotifications = notifications.map((notif) =>
       notif.id === notification.id ? { ...notif, isUnread: false } : notif
@@ -117,12 +132,7 @@ const ClientHeader = () => {
     setShowNotifications(false);
   };
 
-  const handleBellAndDotClick = (e) => {
-    e.stopPropagation(); // Prevent event propagation to the document
-    toggleNotifications();
-  };
-
-  // Close dropdown if clicked outside
+  // Handle outside click for notifications dropdown
   const handleClickOutside = (event) => {
     if (
       dropdownRef.current &&
@@ -159,27 +169,24 @@ const ClientHeader = () => {
           <FaSearch className="client-search-icon" />
           <input
             type="text"
-            placeholder="Search for anything..."
+            placeholder={placeholder}
             className="client-search-bar"
-            readOnly
+            value={searchInput}
+            onChange={handleSearchChange}
           />
         </div>
 
-        {/* Notification Bell and Red Dot */}
         <div
           className="client-notification-icon"
-          onClick={handleBellAndDotClick}
-          ref={bellIconRef} // Ref for the bell icon
+          onClick={toggleNotifications}
+          ref={bellIconRef}
         >
           <FaBell size={24} />
           {unreadNotificationsCount > 0 && (
-            <span className="notification-count">
-              {unreadNotificationsCount}
-            </span>
+            <span className="notification-count">{unreadNotificationsCount}</span>
           )}
         </div>
 
-        {/* Notification Dropdown */}
         {showNotifications && (
           <div className="notifications-dropdown" ref={dropdownRef}>
             <div className="notifications-header">
@@ -187,9 +194,9 @@ const ClientHeader = () => {
               <button onClick={markAllAsRead}>Mark all as read</button>
             </div>
             <ul className="notifications-list">
-              {notifications.map((notification, index) => (
+              {notifications.map((notification) => (
                 <li
-                  key={index}
+                  key={notification.id}
                   className={notification.isUnread ? "unread" : ""}
                   onClick={() => handleNotificationClick(notification)}
                 >

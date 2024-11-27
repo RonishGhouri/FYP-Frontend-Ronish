@@ -1,0 +1,196 @@
+/* General Layout */
+.client-manage-dashboard {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.client-main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5;
+  overflow-y: auto;
+}
+
+.client-manage-container {
+  margin: 90px auto; /* Adjust spacing around the container */
+  width: 80%; /* Narrower width for a compact layout */
+  max-width: 65%; /* Limit maximum width */
+  background: white;
+  border-radius: 12px; /* Slightly rounded corners */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px 25px; /* Balanced padding */
+  text-align: center;
+  
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: left; /* Align heading to the left */
+  color: #333;
+}
+
+/* Subheading (optional explanation text) */
+.subheading {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+  text-align: left; /* Align subheading with the main heading */
+}
+
+/* Tabs Styling */
+.manage-tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start; /* Left-align the tabs */
+  margin-bottom: 20px;
+}
+
+.manage-tab {
+  padding: 8px 15px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 15px; /* Rounded tabs */
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.manage-tab.manage-active-tab {
+  background-color: #0073e6;
+  color: white;
+  transform: scale(1.05); /* Slightly larger active tab */
+}
+
+.manage-tab:hover {
+  background-color: #005bb5;
+  color: white;
+}
+
+/* Booking List Styling */
+.manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: stretch; /* Full-width booking cards */
+  margin-top: 20px;
+}
+
+.empty-message {
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+/* Booking Item Styling */
+.manage-item {
+  display: flex;
+  align-items: flex-start; /* Align items at the top */
+  justify-content: space-between; /* Space between date, info, and actions */
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Full width within container */
+  cursor: pointer;
+  transition: box-shadow 0.3s, transform 0.2s ease;
+}
+
+.manage-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px); /* Subtle lift on hover */
+}
+
+.manage-date {
+  font-weight: bold;
+  color: #e63946; /* Match the red color from the image */
+  margin-right: 20px;
+  flex-shrink: 0; /* Prevent shrinking */
+  font-size: 14px;
+  text-align: left;
+}
+
+.manage-info {
+  flex-grow: 1; /* Allow this section to grow */
+  text-align: left; /* Align text to the left */
+}
+
+.manage-info h4 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.manage-info p {
+  margin: 3px 0;
+  color: #555;
+  font-size: 12px;
+  line-height: 1.4; /* Better readability */
+}
+
+/* Edit Button Styling */
+.manage-actions {
+  margin-left: 20px;
+}
+
+.manage-actions button {
+  padding: 4px 10px;
+  border: none;
+  background-color: transparent; /* No background */
+  color: #0073e6; /* Blue text for "Edit" */
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.manage-actions button:hover {
+  color: #005bb5;
+  text-decoration: none;
+}
+
+/* Modal Styling */
+.manage-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.manage-modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: #e0e0e0;
+  cursor: pointer;
+}
+
+.modal-actions button:hover {
+  background: #d0d0d0;
+}

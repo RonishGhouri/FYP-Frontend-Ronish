@@ -1,0 +1,208 @@
+.profile-section {
+  width: 80%;
+  margin-left: 70px;
+}
+
+.form-section {
+  margin-bottom: 20px;
+}
+
+.form-section label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form-section button {
+  background: #212ea0;
+  color: white;
+}
+
+.form-section button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+}
+
+.form-input {
+  width: 95%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+/* Certification Section */
+.certification-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.certification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.certification-header h3 {
+  font-size: 1.2em;
+  margin: 0;
+}
+
+.certification-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.add-certification,
+.edit-certification {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #007bff;
+  font-size: 1.2em;
+}
+
+/* Toggle for certificate list visibility */
+.certification-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.show-all {
+  max-height: 500px; /* Adjust this height based on your content */
+}
+
+.show-less {
+  max-height: 100px; /* Default height to show only a few items */
+}
+
+.certification-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.certification-item:hover {
+  background-color: #f0f0f0;
+}
+
+.certification-item.active {
+  background-color: #d0e0f0;
+  color: #2980b9;
+}
+
+.cert-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cert-name {
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.cert-org,
+.cert-date {
+  font-size: 0.9em;
+  color: #666;
+}
+
+.show-all-link {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.show-all-link a {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.show-all-link a:hover {
+  text-decoration: underline;
+}
+
+/* Certificate Details Modal */
+.certificate-details-modal {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 100%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
+}
+
+.certificate-details-modal h3 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.certificate-details-modal p {
+  font-size: 16px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.save-button,
+.cancel-button {
+  background: #212ea0;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.save-button:hover,
+.cancel-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .certification-section {
+    padding: 15px;
+  }
+
+  .menu-section {
+    width: 200px;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 100%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
+  transition: all 0.3s ease;
+}

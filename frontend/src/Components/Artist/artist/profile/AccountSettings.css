@@ -1,0 +1,63 @@
+.profile-section {
+  width: 80%;
+  margin-left: 70px;
+}
+
+.option-section {
+  margin-bottom: 16px;
+}
+
+.option-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.text-and-radio {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.text-content {
+  flex-grow: 1;
+  padding-right: 10px;
+}
+
+.action-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.primary-button {
+  background-color: #212ea0;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.primary-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+}
+
+.secondary-button {
+  background-color: #212ea0;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+}

@@ -114,9 +114,9 @@ const ArtistContent = () => {
   };
 
   return (
-    <div className="artist-dashboard">
+    <div className="artist-content">
       <ArtistSidebar />
-      <div className="artist-main-dashboard">
+      <div className="artist-main-content">
         <ArtistHeader />
         <div className="artist-content-section">
           <h3 className="artist-content-header">Manage Content</h3>
