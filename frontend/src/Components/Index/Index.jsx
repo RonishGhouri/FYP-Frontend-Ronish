@@ -14,7 +14,7 @@ import PasswordReset from "../AuthenticationPages/PasswordReset/PasswordReset.js
 import NewPassword from "../AuthenticationPages/NewPassword/NewPassword.jsx";
 import ClientDashboard from "../Client/ClientDashboard.jsx";
 import ClientProfile from "../Client/profile/ClientProfile.jsx";
-import Manager from "../Manager/Manager.jsx";
+
 
 import RequireAuth from "../AuthenticationPages/RequireAuth";
 
@@ -28,9 +28,9 @@ import ArtistPayment from "../Artist/artist/ArtistPayment";
 import ArtistChat from "../Artist/artist/ArtistChat";
 import ClientChat from "../Client/ClientChat.jsx";
 import ClientBrowserArtist from "../Client/browse/ClientBrowserArtist.jsx";
-import ClientEvent from "../Client/ClientEvent.jsx";
-import ClientBooking from "../Client/ClientBooking.jsx";
-import ClientPayment from "../Client/ClientPayment.jsx";
+import ClientEvent from "../Client/Events/ClientEvent.jsx";
+import ClientBooking from "../Client/Bookings/ClientBooking.jsx";
+import ClientPayment from "../Client/Payment/PaymentDashboard.jsx";
 
 function Index() {
   const location = useLocation(); // Get the current path
@@ -71,7 +71,6 @@ function Index() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/manager" element={<Manager />} />
         <Route path="/password-reset" element={<PasswordReset />} />
         <Route path="/reset/:uidb64/:token" element={<NewPassword />} />
 

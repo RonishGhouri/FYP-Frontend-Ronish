@@ -1,77 +1,81 @@
-import React, { useState } from 'react';
-import './ClientBooking.css';
-import ClientSidebar from '../sidebar/ClientSidebar';
-import ClientHeader from '../header/ClientHeader';
-import BookingManager from './BookingManager';
-
-const initialBookingsData = [
-  {
-    id: 1,
-    date: 'Wed, 28, Sep 2023',
-    time: '09:00 - 09:30',
-    eventName: '30min Consultation',
-    location: 'Online',
-    artist: { id: 1, name: 'Peer', profileUrl: '/artists/peer' },
-    eventType: 'Corporate',
-    notes: 'Prepare pitch for meeting',
-    status: 'Upcoming',
-  },
-  {
-    id: 2,
-    date: 'Fri, 30, Sep 2023',
-    time: '15:20 - 16:20',
-    eventName: 'Product Launch',
-    location: 'WeWork Paris',
-    artist: { id: 2, name: 'Alice', profileUrl: '/artists/alice' },
-    eventType: 'Private',
-    notes: 'Special catering request',
-    status: 'Pending',
-    paymentRequired: true,
-    confirmationStatus: 'Awaiting',
-  },
-  {
-    id: 3,
-    date: 'Mon, 2, Oct 2023',
-    time: '10:00 - 11:00',
-    eventName: 'Team Building Workshop',
-    location: 'Zoom',
-    artist: { id: 3, name: 'John', profileUrl: '/artists/john' },
-    eventType: 'Corporate',
-    notes: 'Discuss team roles and responsibilities.',
-    status: 'Upcoming',
-  },
-];
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./ClientBooking.css";
+import ClientSidebar from "../sidebar/ClientSidebar";
+import ClientHeader from "../header/ClientHeader";
+import BookingModal from "./BookingModal";
+import PaymentPopup from "./PaymentPopup";
+import { useBookings } from "../../../Context/BookingsContext";
 
 const ClientBooking = () => {
-  const [bookings, setBookings] = useState(initialBookingsData);
-  const [activeTab, setActiveTab] = useState('Upcoming');
+  const { bookings } = useBookings(); // Fetch bookings from the context
+  const [activeTab, setActiveTab] = useState("Upcoming");
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [notification, setNotification] = useState('');
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
 
-  // Tab change handler
+  const navigate = useNavigate();
+
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSelectedBooking(null);
   };
 
-  // Cancel booking handler
   const handleCancelBooking = () => {
-    const updatedBooking = { ...selectedBooking, status: 'Cancelled' };
+    const updatedBooking = { ...selectedBooking, status: "Cancelled" };
     setBookings((prev) =>
-      prev.map((booking) => (booking.id === selectedBooking.id ? updatedBooking : booking))
+      prev.map((booking) =>
+        booking.id === selectedBooking.id ? updatedBooking : booking
+      )
     );
     setSelectedBooking(null);
-    setNotification('Booking has been cancelled.');
+    showNotificationMessage("Booking has been cancelled.");
   };
 
-  // Payment handler
-  const handlePayment = () => {
-    const updatedBooking = { ...selectedBooking, status: 'Upcoming', paymentRequired: false };
+  const handleResubmitBooking = (updatedBooking) => {
+    const resubmittedBooking = { ...updatedBooking, status: "Pending" };
     setBookings((prev) =>
-      prev.map((booking) => (booking.id === selectedBooking.id ? updatedBooking : booking))
+      prev.map((booking) =>
+        booking.id === updatedBooking.id ? resubmittedBooking : booking
+      )
     );
     setSelectedBooking(null);
-    setNotification('Payment successful. Booking confirmed!');
+    showNotificationMessage("Booking has been resubmitted and is now Pending.");
+  };
+
+  const handlePayment = () => {
+    setShowPaymentPopup(true);
+  };
+
+  const handleConfirmPayment = () => {
+    const updatedBooking = {
+      ...selectedBooking,
+      status: "Upcoming",
+      paymentRequired: false,
+    };
+    setBookings((prev) =>
+      prev.map((booking) =>
+        booking.id === selectedBooking.id ? updatedBooking : booking
+      )
+    );
+    setSelectedBooking(null);
+    setShowPaymentPopup(false);
+    showNotificationMessage("Payment successful. Booking confirmed!");
+  };
+
+  const showNotificationMessage = (message) => {
+    setNotificationMessage(message);
+    setShowNotification(true);
+  };
+
+  const closeNotificationModal = () => {
+    setShowNotification(false);
+    setNotificationMessage("");
+  };
+
+  const navigateToArtistProfile = (url) => {
+    navigate(url);
   };
 
   return (
@@ -81,34 +85,105 @@ const ClientBooking = () => {
         <ClientHeader />
         <div className="client-manage-container">
           <h2>Manage Bookings</h2>
-          {/* Tabs */}
           <div className="manage-tabs">
-            {['Upcoming', 'Pending', 'Cancelled', 'Completed'].map((tab) => (
+            {["Upcoming", "Pending", "Cancelled", "Completed"].map((tab) => (
               <button
                 key={tab}
-                className={`manage-tab ${activeTab === tab ? 'manage-active-tab' : ''}`}
+                className={`manage-tab ${
+                  activeTab === tab ? "manage-active-tab" : ""
+                }`}
                 onClick={() => handleTabChange(tab)}
               >
                 {tab}
               </button>
             ))}
           </div>
-          {/* Booking Manager */}
-          <BookingManager
-            bookings={bookings.filter((booking) => booking.status === activeTab)}
-            selectedBooking={selectedBooking}
-            setSelectedBooking={setSelectedBooking}
-            onCancelBooking={handleCancelBooking}
-            onPayment={handlePayment}
-          />
-        </div>
-        {/* Notification */}
-        {notification && (
-          <div className="notification">
-            <p>{notification}</p>
-            <button onClick={() => setNotification('')}>Close</button>
+          <div className="manage-list-container">
+            <div className="manage-list">
+              {bookings.filter((booking) => booking.status === activeTab)
+                .length === 0 ? (
+                <p className="empty-message">
+                  No bookings available for this status.
+                </p>
+              ) : (
+                bookings
+                  .filter((booking) => booking.status === activeTab)
+                  .map((booking) => (
+                    <div
+                      key={booking.id}
+                      className="manage-item"
+                      onClick={() => setSelectedBooking(booking)}
+                    >
+                      {/* Date on the left */}
+                      <div className="manage-date">{booking.date}</div>
+
+                      {/* Booking Details */}
+                      <div className="manage-details">
+                        <h4 className="manage-heading">{booking.eventType}</h4>
+                        <p>Artist: {booking.artist.name}</p>
+                        <p>Location: {booking.location}</p>
+                        <p>Event Details/Special Notes: {booking.eventName}</p>
+                        <p>
+                          Confirmation Status:{" "}
+                          {booking.confirmationStatus
+                            ? booking.confirmationStatus
+                            : booking.status}
+                        </p>
+                      </div>
+
+                      {/* View Artist Button */}
+                      <div className="manage-actions">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigateToArtistProfile(booking.artist.profileUrl);
+                          }}
+                        >
+                          View Artist
+                        </button>
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
           </div>
-        )}
+
+          {selectedBooking && (
+            <BookingModal
+              booking={selectedBooking}
+              onClose={() => setSelectedBooking(null)}
+              onCancelBooking={handleCancelBooking}
+              onPayment={handlePayment}
+              onResubmitBooking={handleResubmitBooking}
+            />
+          )}
+
+          {showPaymentPopup && selectedBooking && (
+            <PaymentPopup
+              booking={selectedBooking}
+              onClose={() => setShowPaymentPopup(false)}
+              onConfirm={handleConfirmPayment}
+            />
+          )}
+
+          {/* Notification Modal */}
+          {showNotification && (
+            <div
+              className="notification-modal-overlay"
+              onClick={closeNotificationModal}
+            >
+              <div className="notification-modal">
+                <p>{notificationMessage}</p>
+                <button
+                  onClick={closeNotificationModal}
+                  className="notification-close-btn"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

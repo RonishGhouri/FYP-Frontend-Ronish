@@ -1,0 +1,151 @@
+/* Modal Overlay */
+.manage-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  transition: all 0.3s ease-in-out;
+}
+
+/* Modal Content */
+.manage-modal-content {
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-out;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Modal Header */
+.manage-modal-content h3 {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 15px;
+}
+
+/* Modal Text */
+.manage-modal-content p {
+  font-size: 16px;
+  color: #555;
+  margin: 5px 0;
+}
+
+/* Action Buttons Container */
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 15px; /* Space between buttons */
+  align-items: center; /* Center buttons horizontally */
+}
+
+/* General Button Styles */
+.modal-actions button {
+  padding: 14px 25px;
+  font-size: 18px;
+  border-radius: 8px;
+  border: 2px solid #0073e6;
+  background-color: white;
+  color: #0073e6;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Make buttons fill the modal width */
+  max-width: 350px; /* Limit button width */
+}
+
+/* Hover Effects */
+.modal-actions button:hover {
+  background-color: #0073e6;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.modal-actions button:active {
+  transform: translateY(1px);
+}
+
+/* Specific Button Styling */
+.payment-button {
+  border-color: #4CAF50;
+  color: #4CAF50;
+}
+
+.payment-button:hover {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.chat-button {
+  border-color: #1E88E5;
+  color: #1E88E5;
+}
+
+.chat-button:hover {
+  background-color: #1E88E5;
+  color: white;
+}
+
+.edit-button {
+  border-color: #FFB300;
+  color: #FFB300;
+}
+
+.edit-button:hover {
+  background-color: #FFB300;
+  color: white;
+}
+
+.resubmit-button {
+  border-color: #8E24AA;
+  color: #8E24AA;
+}
+
+.resubmit-button:hover {
+  background-color: #8E24AA;
+  color: white;
+}
+
+.cancel-button {
+  border-color: #f44336;
+  color: #f44336;
+}
+
+.cancel-button:hover {
+  background-color: #f44336;
+  color: white;
+}
+
+.close-button {
+  border-color: #757575;
+  color: #757575;
+}
+
+.close-button:hover {
+  background-color: #757575;
+  color: white;
+}

@@ -84,6 +84,7 @@ const ArtistProfile = ({
         return null;
     }
   };
+  
 
   return (
     <div className="artist-profile">

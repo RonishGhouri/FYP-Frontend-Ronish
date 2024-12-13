@@ -13,13 +13,22 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { MdEventNote } from "react-icons/md";
+import { signOut } from "firebase/auth"; // Import Firebase signOut function
+import { auth } from "../../../firebaseConfig"; // Import Firebase auth instance
 
 const ArtistSidebar = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
-  const handleLogout = () => {
-    localStorage.clear(); // Clear local storage
-    navigate("/login"); // Redirect to login page
+  const handleLogout = async () => {
+    try {
+      // Sign out the user from Firebase
+      await signOut(auth);
+      localStorage.clear(); // Clear local storage
+      navigate("/login"); // Redirect to login page
+    } catch (error) {
+      console.error("Error logging out:", error);
+      alert("An error occurred while logging out. Please try again.");
+    }
   };
 
   return (

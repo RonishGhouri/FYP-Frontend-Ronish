@@ -1,12 +1,14 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../authContext"; // Ensure authContext is implemented
 
 const RequireAuth = ({ children }) => {
-  const accessToken = localStorage.getItem('access');
+  const { currentUser } = useAuth();
+  const location = useLocation();
 
-  if (!accessToken) {
-    // If no access token is found, redirect to the login page
-    return <Navigate to="/login" />;
+  if (!currentUser) {
+    // Redirect to login if not authenticated
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;

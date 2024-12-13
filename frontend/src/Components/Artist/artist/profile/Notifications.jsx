@@ -1,75 +1,104 @@
-import React from "react";
-import  { useState, useEffect } from "react";
-
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../../authContext"; // Authentication context
+import { db } from "../../../firebaseConfig"; // Firestore configuration
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import "./Notifications.css";
 
 function Notifications() {
+  const { currentUser } = useAuth(); // Get the authenticated user
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: {
-      marketing: false,
       bookingUpdates: true,
     },
     smsNotifications: false,
-    pushNotifications: true,
     soundAlerts: false,
   });
 
   useEffect(() => {
-    const storedNotifications = localStorage.getItem("notificationSettings");
-    const parsedNotifications = storedNotifications
-      ? JSON.parse(storedNotifications)
-      : {};
+    // Fetch notification settings from Firestore
+    const fetchNotificationSettings = async () => {
+      if (!currentUser) return;
+      setLoading(true);
 
-    setNotificationSettings((prevSettings) => ({
-      ...prevSettings,
-      ...parsedNotifications,
-    }));
-  }, []);
+      try {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const fetchedSettings = docSnap.data().notificationSettings || {};
+          setNotificationSettings((prevSettings) => ({
+            ...prevSettings,
+            ...fetchedSettings,
+            emailNotifications: {
+              ...prevSettings.emailNotifications,
+              ...(fetchedSettings.emailNotifications || {}),
+            },
+          }));
+        } else {
+          console.log("No notification settings found!");
+        }
+      } catch (error) {
+        console.error("Error fetching notification settings:", error);
+        setError("Failed to fetch notification settings. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNotificationSettings();
+  }, [currentUser]);
 
   const handleNotificationChange = (e) => {
     const { name, checked } = e.target;
     if (name.startsWith("emailNotifications")) {
       const notificationType = name.split(".")[1];
-      setNotificationSettings({
-        ...notificationSettings,
+      setNotificationSettings((prevSettings) => ({
+        ...prevSettings,
         emailNotifications: {
-          ...notificationSettings.emailNotifications,
+          ...prevSettings.emailNotifications,
           [notificationType]: checked,
         },
-      });
+      }));
     } else {
-      setNotificationSettings({
-        ...notificationSettings,
+      setNotificationSettings((prevSettings) => ({
+        ...prevSettings,
         [name]: checked,
-      });
+      }));
     }
   };
-  
 
-
-  const handleSaveChanges = (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setSuccess(false);
+    setError("");
 
-    localStorage.setItem(
-      "notificationSettings",
-      JSON.stringify(notificationSettings)
-    );
+    try {
+      const docRef = doc(db, "users", currentUser.uid);
+      await setDoc(docRef, { notificationSettings }, { merge: true });
+      setSuccess(true);
+    } catch (error) {
+      console.error("Error saving notification settings:", error);
+      setError("Failed to save notification settings. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div className="profile-section">
       <h2>Notifications</h2>
-      <form onSubmit={handleSaveChanges}>
-        <div className="form-section">
-          <label>Email Notifications (Marketing)</label>
-          <input
-            type="checkbox"
-            name="emailNotifications.marketing"
-            checked={notificationSettings.emailNotifications.marketing}
-            onChange={handleNotificationChange}
-          />{" "}
-          Receive marketing emails
-        </div>
+      {loading && <p>Loading...</p>}
+      {success && (
+        <p className="success-message">Notification settings updated successfully!</p>
+      )}
+      {error && <p className="error-message">{error}</p>}
 
+      <form onSubmit={handleSaveChanges}>
         <div className="form-section">
           <label>Email Notifications (Booking Updates)</label>
           <input
@@ -77,7 +106,7 @@ function Notifications() {
             name="emailNotifications.bookingUpdates"
             checked={notificationSettings.emailNotifications.bookingUpdates}
             onChange={handleNotificationChange}
-          />{" "}
+          />
           Receive booking update emails
         </div>
 
@@ -88,19 +117,8 @@ function Notifications() {
             name="smsNotifications"
             checked={notificationSettings.smsNotifications}
             onChange={handleNotificationChange}
-          />{" "}
+          />
           Enable SMS notifications
-        </div>
-
-        <div className="form-section">
-          <label>Push Notifications</label>
-          <input
-            type="checkbox"
-            name="pushNotifications"
-            checked={notificationSettings.pushNotifications}
-            onChange={handleNotificationChange}
-          />{" "}
-          Enable push notifications
         </div>
 
         <div className="form-section">
@@ -110,14 +128,13 @@ function Notifications() {
             name="soundAlerts"
             checked={notificationSettings.soundAlerts}
             onChange={handleNotificationChange}
-          />{" "}
+          />
           Enable sound alerts for notifications
         </div>
 
-        {/* Save Button */}
         <div className="form-section">
-          <button type="submit" className="save-button">
-            Save Changes
+          <button type="submit" className="save-button" disabled={loading}>
+            {loading ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>

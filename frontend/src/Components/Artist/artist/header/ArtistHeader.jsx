@@ -1,9 +1,14 @@
-import { FaBell, FaSearch } from "react-icons/fa";
-import "./ArtistHeader.css";
 import React, { useState, useEffect, useRef } from "react";
+import { FaBell, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+import { db } from "../../../firebaseConfig"; // Firestore configuration
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { useAuth } from "../../../authContext"; // Authentication context
+import "./ArtistHeader.css";
+
 const ArtistHeader = () => {
+  const { currentUser } = useAuth(); // Get the authenticated user
   const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState("");
   const [greeting, setGreeting] = useState("");
@@ -11,6 +16,7 @@ const ArtistHeader = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef(null); // Reference for the notification dropdown
   const bellIconRef = useRef(null); // Reference for the bell icon
+  const [showProfileInformation, setShowProfileInformation] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,52 +43,85 @@ const ArtistHeader = () => {
       setGreeting("Evening");
     }
 
-    const storedUsername = localStorage.getItem("username");
-    const storedProfilePic = localStorage.getItem("profilePic");
+    // Fetch profile data from Firestore
+    const fetchProfile = async () => {
+      if (!currentUser) return;
 
-    if (storedUsername) {
-      setUsername(storedUsername);
-    }
-    if (storedProfilePic) {
-      setProfilePic(storedProfilePic);
-    } else {
-      setProfilePic("https://via.placeholder.com/40");
-    }
+      try {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
 
-    const storedNotifications = JSON.parse(localStorage.getItem("notifications"));
-    if (storedNotifications) {
-      setNotifications(storedNotifications);
-    } else {
-      const initialNotifications = [
-        { id: 1, type: "chat", message: "New message from Customer 1", isUnread: true },
-        { id: 2, type: "event", message: "New event booking: 'Art Expo 2024'", isUnread: true },
-        { id: 3, type: "payment", message: "Payment received for event", isUnread: true },
-        { id: 4, type: "content", message: "New content uploaded successfully", isUnread: false },
-      ];
-      setNotifications(initialNotifications);
-      localStorage.setItem("notifications", JSON.stringify(initialNotifications));
-    }
-  }, []);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUsername(data.username || "");
+          setProfilePic(
+            data.profilePicture || "https://via.placeholder.com/40"
+          );
+        } else {
+          console.log("No profile data found!");
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+
+    // Fetch notifications from Firestore
+    const fetchNotifications = async () => {
+      if (!currentUser) return;
+
+      try {
+        const docRef = doc(db, "notifications", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setNotifications(docSnap.data().notifications || []);
+        } else {
+          console.log("No notifications found!");
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchProfile();
+    fetchNotifications();
+  }, [currentUser]);
 
   const toggleNotifications = () => {
     setShowNotifications((prev) => !prev); // Toggles open/close
   };
 
-  const markAllAsRead = () => {
-    const updatedNotifications = notifications.map(notification => ({
+  const markAllAsRead = async () => {
+    const updatedNotifications = notifications.map((notification) => ({
       ...notification,
       isUnread: false,
     }));
+
     setNotifications(updatedNotifications);
-    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+
+    // Update notifications in Firestore
+    try {
+      const docRef = doc(db, "notifications", currentUser.uid);
+      await updateDoc(docRef, { notifications: updatedNotifications });
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+    }
   };
 
-  const handleNotificationClick = (notification) => {
+  const handleNotificationClick = async (notification) => {
     const updatedNotifications = notifications.map((notif) =>
       notif.id === notification.id ? { ...notif, isUnread: false } : notif
     );
+
     setNotifications(updatedNotifications);
-    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+
+    // Update notifications in Firestore
+    try {
+      const docRef = doc(db, "notifications", currentUser.uid);
+      await updateDoc(docRef, { notifications: updatedNotifications });
+    } catch (error) {
+      console.error("Error updating notifications:", error);
+    }
 
     switch (notification.type) {
       case "chat":
@@ -132,13 +171,23 @@ const ArtistHeader = () => {
     };
   }, [showNotifications]);
 
-  const unreadNotificationsCount = notifications.filter((n) => n.isUnread).length;
+  const unreadNotificationsCount = notifications.filter(
+    (n) => n.isUnread
+  ).length;
 
+  
   return (
     <header className="artist-dashboard-header">
       <div className="artist-greeting">
-        <img src={profilePic} alt="Profile" className="artist-profile-pic" />
-        <h3>{greeting}, {username}</h3>
+        <img
+          src={profilePic}
+          alt="Profile"
+          className="artist-profile-pic"
+          
+        />
+        <h3>
+          {greeting}, {username}
+        </h3>
       </div>
       <div className="artist-top-right">
         <div className="artist-search-bar-container">

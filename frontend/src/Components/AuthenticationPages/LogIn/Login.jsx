@@ -1,72 +1,60 @@
-import React, { useState } from 'react';
-import { useNavigate, Link, redirect } from 'react-router-dom';
-import axios from 'axios';
-import Navbar from '../AuthNavbar/AuthNavbar';
-import './Login.css';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import Navbar from "../AuthNavbar/AuthNavbar";
+import { auth, db } from "../../firebaseConfig"; // Import Firebase Authentication and Firestore
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import "./Login.css";
 
 const Login = () => {
-  const [username, setUsername] = useState(''); // Ensure that you're logging in with the username, not email
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [role, setRole] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError(""); // Reset error state before processing the form
 
-    // Ensure username and password fields are not empty
-    if (!username || !password) {
-      setError('Please fill in all the fields');
-      setLoading(false);
-      return;
-    }
-
-    // API Call to Django Backend (JWT login)
     try {
-      const response = await axios.post('http://localhost:8000/api/auth/login/', {
-        username,  // Make sure this matches the backend's expected 'username'
-        password,
-      });
+      // Sign in with Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
 
-      // Assuming backend returns access and refresh tokens, and user role
-      const { access, refresh, role } = response.data;
+      // Fetch the user's role from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
 
-      // Store tokens and user role in localStorage
-      localStorage.setItem('access', access);
-      localStorage.setItem('refresh', refresh);
-      localStorage.setItem('username', username);
-      localStorage.setItem('userRole', role);
+      if (userDoc.exists()) {
+        const userRole = userDoc.data().role;
+        console.log(userRole);
+        setRole(userRole); // Set role from Firestore
 
-      // Redirect user based on their role
-      switch (role) {
-        case 'artist':
-          navigate('/artist');
-          break;
-        case 'manager':
-          navigate('/manager');
-          break;
-        case 'client':  // Assuming 'customer' is the role instead of 'consumer'
-          navigate('/client');
-          break;
-        default:
-          setError('Invalid user role');
-          break;
-      }
-
-    } catch (err) {
-      // Log the full error response for debugging
-      console.error('Error during login:', err.response);
-
-      // Handle the error based on response from the backend
-      if (err.response && err.response.data) {
-        setError(err.response.data.detail || 'Invalid username or password');
+        // Navigate based on the user's role
+        if (userRole === "artist") {
+          console.log("Navigating to artist...");
+          setTimeout(() => {
+            navigate('/artist/');
+          }, 500);
+        } else if (userRole === "client") {
+          console.log("Navigating to client...");
+          setTimeout(() => {
+            navigate("/client/");
+          }, 500);
+        }
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError("User data not found");
       }
-
-      setLoading(false);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false); // End loading state
     }
   };
 
@@ -74,22 +62,29 @@ const Login = () => {
     <div className="auth-page-container">
       <Navbar />
       <div className="auth-form-wrapper">
-        <h2>Welcome Back</h2>
-        <p className="subheading">Log in to your account</p>
+        <h2>Log In</h2>
+        <p className="subheading">Welcome back! Please log in to continue.</p>
 
         {/* Display error message */}
         {error && <p className="error-msg">{error}</p>}
 
+        {/* Display role if user is authenticated */}
+        {role && (
+          <p className="role-msg">
+            You are logged in as: <strong>{role}</strong>
+          </p>
+        )}
+
         {/* Login form */}
         <form onSubmit={handleLogin}>
           <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
             required
             className="auth-input"
-            autoComplete="username"
+            autoComplete="email"
           />
           <input
             type="password"
@@ -100,16 +95,17 @@ const Login = () => {
             className="auth-input"
             autoComplete="current-password"
           />
+
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
 
         <p className="auth-footer">
-          Forgot your password? <Link to="/password-reset" className="auth-link">Reset it here</Link>
-        </p>
-        <p className="auth-footer">
-          Don't have an account? <Link to="/signup" className="auth-link">Sign Up</Link>
+          Don't have an account?{" "}
+          <Link to="/signup" className="auth-link">
+            Sign Up
+          </Link>
         </p>
       </div>
     </div>

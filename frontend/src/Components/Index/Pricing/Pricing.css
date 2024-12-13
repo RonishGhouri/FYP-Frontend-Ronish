@@ -36,7 +36,9 @@
     text-align: center;
 }
 
-
+.caption p{
+    color: white;
+}
 .price:hover .caption{
     opacity: 1;
     /* from down to up */

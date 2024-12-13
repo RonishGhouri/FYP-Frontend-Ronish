@@ -1,10 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./ArtistContent.css";
 import ArtistSidebar from "./sidebar/ArtistSidebar";
 import ArtistHeader from "./header/ArtistHeader";
 import { FaPlus, FaArrowLeft } from "react-icons/fa";
+import { useAuth } from "../../authContext";
+import { useRef } from "react";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { db } from "../../firebaseConfig";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
-const ArtistContent = () => {
+const ArtistContent = ({ artistId }) => {
+  const fileInputRef = useRef(null); // Create a ref for the file input
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+
   const [uploadedContent, setUploadedContent] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
@@ -15,6 +39,35 @@ const ArtistContent = () => {
   const [showFullPreview, setShowFullPreview] = useState(false);
   const [fullPreviewFile, setFullPreviewFile] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [loading, setLoading] = useState(false); // Added loading state
+
+  useEffect(() => {
+    console.log("Current User:", currentUser);
+    if (currentUser) {
+      fetchArtistContent();
+    }
+  }, [currentUser]);
+
+  // Fetch content from Firestore for the logged-in artist
+  const fetchArtistContent = async () => {
+    try {
+      setLoading(true);
+      const q = query(
+        collection(db, "artistContent"),
+        where("artistId", "==", currentUser.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const contentList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setUploadedContent(contentList);
+    } catch (error) {
+      console.error("Error fetching content:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -58,16 +111,45 @@ const ArtistContent = () => {
     setShowDetailsForm(true);
   };
 
-  const handleSaveContent = (e) => {
+  const handleSaveContent = async (e) => {
     e.preventDefault();
-    const caption = e.target.caption.value;
-    const location = e.target.location.value;
-    const tags = e.target.tags.value;
-    setUploadedContent([
-      ...uploadedContent,
-      { fileUrl: previewFile, type: previewFileType, caption, location, tags },
-    ]);
-    closeModal();
+    try {
+      const caption = e.target.caption.value;
+      const location = e.target.location.value;
+      const tags = e.target.tags.value;
+
+      const newContent = {
+        fileUrl: previewFile,
+        type: previewFileType,
+        caption,
+        location,
+        tags,
+        artistId: currentUser.uid,
+        timestamp: new Date(),
+      };
+
+      const docRef = await addDoc(collection(db, "artistContent"), newContent);
+      setUploadedContent([
+        ...uploadedContent,
+        { id: docRef.id, ...newContent },
+      ]);
+      closeModal();
+    } catch (error) {
+      console.error("Error saving content:", error);
+    }
+  };
+
+  
+  const handleDelete = async () => {
+    try {
+      await deleteDoc(doc(db, "artistContent", selectedItem.id));
+      setUploadedContent(
+        uploadedContent.filter((content) => content.id !== selectedItem.id)
+      );
+      setShowFullPreview(false);
+    } catch (error) {
+      console.error("Error deleting content:", error);
+    }
   };
 
   const closeModal = () => {
@@ -86,31 +168,14 @@ const ArtistContent = () => {
     setShowConfirmation(false);
   };
 
+  const closeFullPreview = () => {
+    setShowFullPreview(false);
+    setFullPreviewFile(null);
+  };
   const handleFullPreview = (item) => {
     setFullPreviewFile(item);
     setSelectedItem(item);
     setShowFullPreview(true);
-  };
-
-  const handleEdit = () => {
-    setPreviewFile(selectedItem.fileUrl);
-    setPreviewFileType(selectedItem.type);
-    setShowFullPreview(false);
-    setShowDetailsForm(false);
-    setShowModal(true);
-    setHasInteracted(true); // Set to true as we are entering edit mode
-  };
-
-  const handleDelete = () => {
-    setUploadedContent(
-      uploadedContent.filter((content) => content !== selectedItem)
-    );
-    setShowFullPreview(false);
-  };
-
-  const closeFullPreview = () => {
-    setShowFullPreview(false);
-    setFullPreviewFile(null);
   };
 
   return (
@@ -253,6 +318,8 @@ const ArtistContent = () => {
                       Select from computer
                       <input
                         type="file"
+                        name="file"
+                        ref={fileInputRef} // Attach the ref to the input
                         style={{ display: "none" }}
                         onChange={handleFileSelect}
                       />
@@ -279,9 +346,6 @@ const ArtistContent = () => {
                   />
                 )}
                 <div className="artist-preview-controls">
-                  <button className="artist-edit-button" onClick={handleEdit}>
-                    Edit
-                  </button>
                   <button
                     className="artist-delete-button"
                     onClick={handleDelete}
@@ -303,7 +367,8 @@ const ArtistContent = () => {
                     onClick={handleDiscard}
                   >
                     Discard
-                  </button><br />
+                  </button>
+                  <br />
                   <button
                     className="artist-cancel-button"
                     onClick={handleCancelDiscard}
@@ -320,4 +385,4 @@ const ArtistContent = () => {
   );
 };
 
-export default ArtistContent;
+export default ArtistContent; 

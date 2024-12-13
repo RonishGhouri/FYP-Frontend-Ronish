@@ -1,27 +1,31 @@
-import React from "react";
-import { useState, useEffect } from "react";
-
+import React, { useState, useEffect } from "react";
 import { FaChevronRight, FaEye, FaEyeSlash } from "react-icons/fa";
+import { useAuth } from "../../../authContext";
+import { auth } from "../../../firebaseConfig";
+import {
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+} from "firebase/auth";
+import { db } from "../../../firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
 import "./PasswordSecurity.css";
 
 function PasswordSecurity() {
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false); // Modal state
-  const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false); // Two-Factor Auth Modal state
-  const [showSecurityQuestionModal, setShowSecurityQuestionModal] =
-    useState(false); // Security Question Modal state
+  const { currentUser } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
 
-  const [isCodeSent, setIsCodeSent] = useState(false); // Track if verification code was sent
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showTwoFactorAuthModal, setShowTwoFactorAuthModal] = useState(false);
 
-  const [emailOrPhone, setEmailOrPhone] = useState(""); // Stores email or phone
-  const [verificationCode, setVerificationCode] = useState(""); // Stores entered verification code
-  const [isVerified, setIsVerified] = useState(false); // Whether 2FA is verified
-
-  const toggleChangePasswordModal = () =>
-    setShowChangePasswordModal(!showChangePasswordModal);
-  const toggleTwoFactorAuthModal = () =>
-    setShowTwoFactorAuthModal(!showTwoFactorAuthModal);
-  const toggleSecurityQuestionModal = () =>
-    setShowSecurityQuestionModal(!showSecurityQuestionModal);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [isCodeSent, setIsCodeSent] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState(null);
 
   const [isPasswordVisible, setIsPasswordVisible] = useState({
     currentPassword: false,
@@ -29,11 +33,17 @@ function PasswordSecurity() {
     confirmPassword: false,
   });
 
-  const sendVerificationCode = () => {
-    if (emailOrPhone) {
-      setIsCodeSent(true); // Simulate code sent
-    }
-  };
+  const [securityData, setSecurityData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    twoFactorAuth: false,
+  });
+
+  const toggleChangePasswordModal = () =>
+    setShowChangePasswordModal(!showChangePasswordModal);
+  const toggleTwoFactorAuthModal = () =>
+    setShowTwoFactorAuthModal(!showTwoFactorAuthModal);
 
   const togglePasswordVisibility = (field) => {
     setIsPasswordVisible((prevState) => ({
@@ -42,63 +52,106 @@ function PasswordSecurity() {
     }));
   };
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-    twoFactorAuth: false,
-    securityQuestion: "",
-    securityAnswer: "",
-  });
-
-  const handlePasswordChange = (e) => {
-    setPasswordData({
-      ...passwordData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleToggleChange = (e) => {
-    setPasswordData({
-      ...passwordData,
-      [e.target.name]: e.target.checked,
-    });
-  };
-
-  const verifyCode = () => {
-    if (verificationCode === "123456") {
-      // Mock valid code
-      setIsVerified(true);
-      setPasswordData({ ...passwordData, twoFactorAuth: true });
-      alert("Two-Factor Authentication Enabled!");
-      setShowTwoFactorAuthModal(false); // Close modal after success
-    } else {
-      alert("Invalid code, please try again.");
+  const initializeRecaptcha = () => {
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        {
+          size: "invisible",
+          callback: (response) => {
+            console.log("Recaptcha verified:", response);
+          },
+          "expired-callback": () => {
+            console.error("Recaptcha expired. Please verify again.");
+          },
+        },
+        auth
+      );
     }
   };
 
-  const handleSaveChanges = (e) => {
-    e.preventDefault();
-    // Store password data in localStorage
-    localStorage.setItem("passwordData", JSON.stringify(passwordData));
+  const sendVerificationCode = async () => {
+    if (!phoneNumber) {
+      setError("Please enter a valid phone number.");
+      return;
+    }
+
+    try {
+      initializeRecaptcha();
+      const result = await signInWithPhoneNumber(
+        auth,
+        phoneNumber,
+        window.recaptchaVerifier
+      );
+      setConfirmationResult(result);
+      setIsCodeSent(true);
+      setError("");
+    } catch (err) {
+      console.error("Error sending verification code:", err);
+      setError("Failed to send verification code. Please try again.");
+    }
   };
 
-  useEffect(() => {
-    // Retrieve password data from localStorage
-    const storedPasswordData = localStorage.getItem("passwordData");
-    const parsedPasswordData = storedPasswordData
-      ? JSON.parse(storedPasswordData)
-      : {};
+  const verifyCode = async () => {
+    if (!verificationCode) {
+      setError("Please enter the verification code.");
+      return;
+    }
 
-    setPasswordData((prevPasswordData) => ({
-      ...prevPasswordData,
-      ...parsedPasswordData,
-    }));
-  }, []);
+    try {
+      await confirmationResult.confirm(verificationCode);
+      setSuccess(true);
+      setSecurityData({ ...securityData, twoFactorAuth: true });
+      alert("Two-Factor Authentication Enabled!");
+      setShowTwoFactorAuthModal(false);
+    } catch (err) {
+      console.error("Error verifying code:", err);
+      setError("Invalid verification code. Please try again.");
+    }
+  };
+
+  const handleSaveChanges = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSuccess(false);
+    setError("");
+
+    if (securityData.newPassword !== securityData.confirmPassword) {
+      setError("New password and confirmation do not match.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const credential = EmailAuthProvider.credential(
+        currentUser.email,
+        securityData.currentPassword
+      );
+      await reauthenticateWithCredential(currentUser, credential);
+      await updatePassword(currentUser, securityData.newPassword);
+
+      setSuccess(true);
+      alert("Password updated successfully.");
+      setShowChangePasswordModal(false);
+    } catch (error) {
+      console.error("Error updating password:", error);
+      setError("Failed to update password. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="profile-section">
       <h2>Password & Security</h2>
+      {loading && <p>Loading...</p>}
+      {success && (
+        <p className="success-message">
+          Security settings updated successfully!
+        </p>
+      )}
+      {error && <p className="error-message">{error}</p>}
+
       <div className="security-menu">
         <button className="security-option" onClick={toggleChangePasswordModal}>
           Change Password
@@ -108,21 +161,13 @@ function PasswordSecurity() {
           Two-Factor Authentication
           <FaChevronRight />
         </button>
-        <button
-          className="security-option"
-          onClick={toggleSecurityQuestionModal}
-        >
-          Security Question
-          <FaChevronRight />
-        </button>
       </div>
 
-      {/* Change Password Modal */}
       {showChangePasswordModal && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Change Password</h3>
-            <form>
+            <form onSubmit={handleSaveChanges}>
               <div className="form-section">
                 <label>Current Password</label>
                 <div className="password-field">
@@ -131,8 +176,13 @@ function PasswordSecurity() {
                       isPasswordVisible.currentPassword ? "text" : "password"
                     }
                     name="currentPassword"
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordChange}
+                    value={securityData.currentPassword}
+                    onChange={(e) =>
+                      setSecurityData({
+                        ...securityData,
+                        currentPassword: e.target.value,
+                      })
+                    }
                     className="form-input"
                   />
                   <span
@@ -154,8 +204,13 @@ function PasswordSecurity() {
                   <input
                     type={isPasswordVisible.newPassword ? "text" : "password"}
                     name="newPassword"
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
+                    value={securityData.newPassword}
+                    onChange={(e) =>
+                      setSecurityData({
+                        ...securityData,
+                        newPassword: e.target.value,
+                      })
+                    }
                     className="form-input"
                   />
                   <span
@@ -175,8 +230,13 @@ function PasswordSecurity() {
                       isPasswordVisible.confirmPassword ? "text" : "password"
                     }
                     name="confirmPassword"
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
+                    value={securityData.confirmPassword}
+                    onChange={(e) =>
+                      setSecurityData({
+                        ...securityData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
                     className="form-input"
                   />
                   <span
@@ -193,11 +253,7 @@ function PasswordSecurity() {
               </div>
 
               <div className="form-section">
-                <button
-                  type="button"
-                  className="save-button"
-                  onClick={() => setShowChangePasswordModal(false)}
-                >
+                <button type="submit" className="save-button">
                   Save
                 </button>
                 <button
@@ -213,7 +269,6 @@ function PasswordSecurity() {
         </div>
       )}
 
-      {/* Two-Factor Authentication Modal */}
       {showTwoFactorAuthModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -221,20 +276,23 @@ function PasswordSecurity() {
             {!isCodeSent ? (
               <>
                 <div className="form-section">
-                  <label>Enter your registered email or phone number</label>
+                  <label>Phone Number</label>
                   <input
                     type="text"
-                    value={emailOrPhone}
-                    onChange={(e) => setEmailOrPhone(e.target.value)}
+                    value={phoneNumber || ""}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                     className="form-input"
-                    placeholder="Email or Phone Number"
+                    placeholder="Enter your phone number"
                   />
                 </div>
+                <div id="recaptcha-container"></div>
                 <div className="form-section">
                   <button
                     type="button"
                     className="save-button"
-                    onClick={sendVerificationCode}
+                    onClick={() => {
+                      sendVerificationCode();
+                    }}
                   >
                     Send Verification Code
                   </button>
@@ -250,15 +308,13 @@ function PasswordSecurity() {
             ) : (
               <>
                 <div className="form-section">
-                  <label>
-                    Enter the verification code sent to {emailOrPhone}
-                  </label>
+                  <label>Verification Code</label>
                   <input
                     type="text"
-                    value={verificationCode}
+                    value={verificationCode || ""}
                     onChange={(e) => setVerificationCode(e.target.value)}
                     className="form-input"
-                    placeholder="Verification Code"
+                    placeholder="Enter the code"
                   />
                 </div>
                 <div className="form-section">
@@ -279,53 +335,6 @@ function PasswordSecurity() {
                 </div>
               </>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Security Question Modal */}
-      {showSecurityQuestionModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Security Question</h3>
-            <div className="form-section">
-              <label>Security Question</label>
-              <input
-                type="text"
-                name="securityQuestion"
-                value={passwordData.securityQuestion}
-                onChange={handlePasswordChange}
-                className="form-input"
-                placeholder="Security Question"
-              />
-            </div>
-            <div className="form-section">
-              <label>Security Answer</label>
-              <input
-                type="text"
-                name="securityAnswer"
-                value={passwordData.securityAnswer}
-                onChange={handlePasswordChange}
-                className="form-input"
-                placeholder="Answer to Security Question"
-              />
-            </div>
-            <div className="form-section">
-              <button
-                type="button"
-                className="save-button"
-                onClick={toggleSecurityQuestionModal}
-              >
-                Save
-              </button>
-              <button
-                type="button"
-                className="cancel-button"
-                onClick={toggleSecurityQuestionModal}
-              >
-                Cancel
-              </button>
-            </div>
           </div>
         </div>
       )}

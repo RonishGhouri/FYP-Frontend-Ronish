@@ -1,0 +1,80 @@
+.client-dashboard-container {
+  display: flex; /* Use flex for layout alignment */
+  background-color: #f3f4f6; /* Existing background color */
+  min-height: 100vh; /* Full viewport height */
+  margin: 0; /* Remove any extra margin */
+  padding: 0; /* Remove any extra padding */
+}
+
+.client-sidebar {
+  width: 250px; /* Fixed sidebar width */
+  position: fixed; /* Fix sidebar to the left */
+  top: 0;
+  left: 0;
+  height: 100vh; /* Full height for the sidebar */
+  z-index: 10; /* Ensure sidebar remains on top */
+}
+
+.payment-main-content {
+  margin-left: 250px; /* Adjust for sidebar width */
+  padding: 20px; /* Add padding for spacing */
+  flex: 1; /* Ensure the main content takes the remaining space */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent content overflow */
+}
+
+.payment-dashboard {
+  margin-top: 80px;
+  padding: 20px; /* Padding inside the dashboard */
+  background-color: #fff; /* White background for content */
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  height: calc(100vh - 120px); /* Dynamically adjust height excluding header */
+  overflow-y: auto; /* Scroll if content exceeds height */
+  position: relative; /* Ensure positioning within the container */
+}
+
+.payment-tabs-container {
+  position: sticky; /* Fix the tabs at the top of the scrolling container */
+  top: 0; /* Stick to the top of the container */
+  z-index: 5; /* Keep it above other content */
+  background-color: #fff; /* Match the background color of the dashboard */
+  padding-bottom: 10px; /* Ensure spacing between tabs and content */
+  border-bottom: 1px solid #e0e0e0; /* Separator line for visual clarity */
+}
+
+.payment-tabs {
+  display: flex;
+  gap: 10px; /* Spacing between tabs */
+  margin-bottom: 0; /* Remove bottom margin */
+  padding: 10px 0; /* Padding for spacing */
+}
+
+.tab {
+  padding: 10px 20px; /* Button padding */
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px; /* Font size for text */
+  color: #666; /* Inactive tab color */
+  border-radius: 5px; /* Rounded corners */
+}
+
+.tab.active {
+  background: #007bff; /* Active tab background */
+  color: white; /* Active tab text color */
+}
+
+.payment-title {
+  position: sticky; /* Fix the title at the top of the container */
+  top: -20px; /* Stick to the top of the container */
+  z-index: 10; /* Ensure it remains above other content */
+  background-color: #fff; /* Match the dashboard background */
+  padding: 10px 0; /* Spacing around the title */
+  font-size: 24px; /* Font size for the title */
+  font-weight: bold; /* Bold text for emphasis */
+  margin-bottom: 20px; /* Space between title and tabs */
+  border-bottom: 1px solid #e0e0e0; /* Separator line below the title */
+  
+}

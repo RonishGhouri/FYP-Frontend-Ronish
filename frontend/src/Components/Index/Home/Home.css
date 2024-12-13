@@ -23,6 +23,8 @@
  .home-text h2{
    font-size: 40px;
    font-weight: 400;
+   text-align: center;
+   color: white;
  }
 
  .home-text p{

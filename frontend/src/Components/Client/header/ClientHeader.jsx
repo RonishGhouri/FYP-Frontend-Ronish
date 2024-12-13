@@ -1,21 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaBell, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+
+import { db } from "../../firebaseConfig"; // Firestore configuration
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { useAuth } from "../../authContext"; // Authentication context
 import "./ClientHeader.css";
 
-const ClientHeader = ({ onSearch, pageContext }) => {
+const ClientHeader = () => {
+  const { currentUser } = useAuth(); // Get the authenticated user
   const [username, setUsername] = useState("");
   const [profilePic, setProfilePic] = useState("");
   const [greeting, setGreeting] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
-  const [placeholder, setPlaceholder] = useState("Search for anything...");
-  const dropdownRef = useRef(null);
-  const bellIconRef = useRef(null);
+  const dropdownRef = useRef(null); // Reference for the notification dropdown
+  const bellIconRef = useRef(null); // Reference for the bell icon
+  const [showProfileInformation, setShowProfileInformation] = useState(false);
   const navigate = useNavigate();
 
-  // Set greeting based on time
   useEffect(() => {
     const getPakistaniTime = () => {
       const currentDate = new Date();
@@ -24,11 +27,14 @@ const ClientHeader = ({ onSearch, pageContext }) => {
         hour: "numeric",
         hour12: false,
       };
-      const timeInPakistan = new Intl.DateTimeFormat("en-US", options).format(currentDate);
+      const timeInPakistan = new Intl.DateTimeFormat("en-US", options).format(
+        currentDate
+      );
       return parseInt(timeInPakistan);
     };
 
     const currentHour = getPakistaniTime();
+
     if (currentHour < 12) {
       setGreeting("Morning");
     } else if (currentHour >= 12 && currentHour < 17) {
@@ -36,95 +42,99 @@ const ClientHeader = ({ onSearch, pageContext }) => {
     } else {
       setGreeting("Evening");
     }
-  }, []);
 
-  // Load user data and notifications
-  useEffect(() => {
-    const storedUsername = localStorage.getItem("username");
-    const storedProfilePic = localStorage.getItem("profilePic");
-    const storedNotifications = JSON.parse(localStorage.getItem("notifications"));
+    // Fetch profile data from Firestore
+    const fetchProfile = async () => {
+      if (!currentUser) return;
 
-    setUsername(storedUsername || "User");
-    setProfilePic(storedProfilePic || "https://via.placeholder.com/40");
+      try {
+        const docRef = doc(db, "users", currentUser.uid);
+        const docSnap = await getDoc(docRef);
 
-    if (storedNotifications) {
-      setNotifications(storedNotifications);
-    } else {
-      const initialNotifications = [
-        { id: 1, type: "chat", message: "New message from Customer 1", isUnread: true },
-        { id: 2, type: "event", message: "New event booking confirmed", isUnread: true },
-        { id: 3, type: "payment", message: "Payment received for event", isUnread: true },
-        { id: 4, type: "content", message: "New content uploaded successfully", isUnread: false },
-      ];
-      setNotifications(initialNotifications);
-      localStorage.setItem("notifications", JSON.stringify(initialNotifications));
-    }
-  }, []);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUsername(data.username || "");
+          setProfilePic(
+            data.profilePicture || "https://via.placeholder.com/40"
+          );
+        } else {
+          console.log("No profile data found!");
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
 
-  // Dynamic placeholder based on page context
-  useEffect(() => {
-    switch (pageContext) {
-      case "Browse Artists":
-        setPlaceholder("Search for artists...");
-        break;
-      case "Manage Profile":
-        setPlaceholder("Search in profile settings...");
-        break;
-      case "Manage Bookings":
-        setPlaceholder("Search bookings...");
-        break;
-      case "Chats":
-        setPlaceholder("Search chat history...");
-        break;
-      default:
-        setPlaceholder("Search for anything...");
-        break;
-    }
-  }, [pageContext]);
+    // Fetch notifications from Firestore
+    const fetchNotifications = async () => {
+      if (!currentUser) return;
 
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchInput(e.target.value);
-    if (onSearch) {
-      onSearch(e.target.value);
-    }
-  };
+      try {
+        const docRef = doc(db, "notifications", currentUser.uid);
+        const docSnap = await getDoc(docRef);
 
-  // Toggle notifications dropdown
+        if (docSnap.exists()) {
+          setNotifications(docSnap.data().notifications || []);
+        } else {
+          console.log("No notifications found!");
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchProfile();
+    fetchNotifications();
+  }, [currentUser]);
+
   const toggleNotifications = () => {
-    setShowNotifications((prev) => !prev);
+    setShowNotifications((prev) => !prev); // Toggles open/close
   };
 
-  // Mark all notifications as read
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     const updatedNotifications = notifications.map((notification) => ({
       ...notification,
       isUnread: false,
     }));
+
     setNotifications(updatedNotifications);
-    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+
+    // Update notifications in Firestore
+    try {
+      const docRef = doc(db, "notifications", currentUser.uid);
+      await updateDoc(docRef, { notifications: updatedNotifications });
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+    }
   };
 
-  // Handle notification click
-  const handleNotificationClick = (notification) => {
+  const handleNotificationClick = async (notification) => {
     const updatedNotifications = notifications.map((notif) =>
       notif.id === notification.id ? { ...notif, isUnread: false } : notif
     );
+
     setNotifications(updatedNotifications);
-    localStorage.setItem("notifications", JSON.stringify(updatedNotifications));
+
+    // Update notifications in Firestore
+    try {
+      const docRef = doc(db, "notifications", currentUser.uid);
+      await updateDoc(docRef, { notifications: updatedNotifications });
+    } catch (error) {
+      console.error("Error updating notifications:", error);
+    }
 
     switch (notification.type) {
       case "chat":
-        navigate("/client/chats");
+        navigate("/artist/chats");
         break;
       case "event":
-        navigate("/client/bookings");
+        navigate("/artist/bookings");
         break;
       case "payment":
-        navigate("/client/payment");
+        navigate("/artist/payment");
         break;
       case "content":
-        navigate("/client/content");
+        navigate("/artist/content");
         break;
       default:
         break;
@@ -132,7 +142,12 @@ const ClientHeader = ({ onSearch, pageContext }) => {
     setShowNotifications(false);
   };
 
-  // Handle outside click for notifications dropdown
+  const handleBellAndDotClick = (e) => {
+    e.stopPropagation(); // Prevent event propagation to the document
+    toggleNotifications();
+  };
+
+  // Close dropdown if clicked outside
   const handleClickOutside = (event) => {
     if (
       dropdownRef.current &&
@@ -156,37 +171,50 @@ const ClientHeader = ({ onSearch, pageContext }) => {
     };
   }, [showNotifications]);
 
-  const unreadNotificationsCount = notifications.filter((n) => n.isUnread).length;
+  const unreadNotificationsCount = notifications.filter(
+    (n) => n.isUnread
+  ).length;
 
+  
   return (
-    <header className="client-dashboard-header">
-      <div className="client-greeting">
-        <img src={profilePic} alt="Profile" className="client-profile-pic" />
-        <h3>{greeting}, {username}</h3>
+    <header className="artist-dashboard-header">
+      <div className="artist-greeting">
+        <img
+          src={profilePic}
+          alt="Profile"
+          className="artist-profile-pic"
+          
+        />
+        <h3>
+          {greeting}, {username}
+        </h3>
       </div>
-      <div className="client-top-right">
-        <div className="client-search-bar-container">
-          <FaSearch className="client-search-icon" />
+      <div className="artist-top-right">
+        <div className="artist-search-bar-container">
+          <FaSearch className="artist-search-icon" />
           <input
             type="text"
-            placeholder={placeholder}
-            className="client-search-bar"
-            value={searchInput}
-            onChange={handleSearchChange}
+            placeholder="Search for anything..."
+            className="artist-search-bar"
+            readOnly
           />
         </div>
 
+        {/* Notification Bell and Red Dot */}
         <div
-          className="client-notification-icon"
-          onClick={toggleNotifications}
-          ref={bellIconRef}
+          className="artist-notification-icon"
+          onClick={handleBellAndDotClick}
+          ref={bellIconRef} // Ref for the bell icon
         >
           <FaBell size={24} />
           {unreadNotificationsCount > 0 && (
-            <span className="notification-count">{unreadNotificationsCount}</span>
+            <span className="notification-count">
+              {unreadNotificationsCount}
+            </span>
           )}
         </div>
 
+        {/* Notification Dropdown */}
         {showNotifications && (
           <div className="notifications-dropdown" ref={dropdownRef}>
             <div className="notifications-header">
@@ -194,9 +222,9 @@ const ClientHeader = ({ onSearch, pageContext }) => {
               <button onClick={markAllAsRead}>Mark all as read</button>
             </div>
             <ul className="notifications-list">
-              {notifications.map((notification) => (
+              {notifications.map((notification, index) => (
                 <li
-                  key={notification.id}
+                  key={index}
                   className={notification.isUnread ? "unread" : ""}
                   onClick={() => handleNotificationClick(notification)}
                 >

@@ -1,140 +1,116 @@
-import React from "react";
-import { useState, useEffect } from "react";
-
-import {FaPencilAlt, FaPlus} from "react-icons/fa"
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../../../authContext"; // Authentication context
+import { db } from "../../../firebaseConfig"; // Firestore configuration
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { FaPencilAlt, FaPlus } from "react-icons/fa";
 import "./ArtistPortfolio.css";
 
 const ArtistPortfolio = () => {
+  const { currentUser } = useAuth(); // Get the authenticated user
   const [isEditing, setIsEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState(null);
-
-  useEffect(() => {
-    const storedCertificates = localStorage.getItem("certificates");
-    if (storedCertificates) {
-      setPortfolioData({ certificates: JSON.parse(storedCertificates) });
-    }
-  }, []);
-  const handleAddCertificate = () => {
-    setIsEditing(false);
-    setNewCertificate({ name: "", org: "", date: "", url: "" });
-    setShowModal(true);
-  };
-  const handleEditCertificate = () => {
-    setIsEditing(true); // Set to true to indicate editing mode
-    setShowModal(true); // Show modal
-  };
-
-  const handleFileUpload = (files) => {
-    const file = e.target.files[0];
-    const fileUrl = URL.createObjectURL(file); // Create URL for preview
-    setNewCertificate({ ...newCertificate, url: fileUrl });
-    const updatedCertificates = [...portfolioData.certificates];
-    const newErrors = [];
-
-    Array.from(files).forEach((file) => {
-      // Check for file size
-      if (file.size > maxFileSize) {
-        newErrors.push(
-          `${file.name} exceeds the maximum size of ${(
-            maxFileSize /
-            1024 /
-            1024
-          ).toFixed(2)}MB.`
-        );
-        return;
-      }
-
-      // Check for valid file types
-      if (!acceptedFileTypes.includes(file.type)) {
-        newErrors.push(
-          `${
-            file.name
-          } is not an accepted format. Allowed formats: ${acceptedFileTypes.join(
-            ", "
-          )}`
-        );
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        updatedCertificates.push({
-          name: file.name,
-          type: file.type,
-          url: reader.result,
-        });
-        setPortfolioData({ certificates: updatedCertificates });
-      };
-      reader.readAsDataURL(file);
-    });
-
-    setErrors(newErrors);
-  };
-
+  const [portfolioData, setPortfolioData] = useState({ certificates: [] });
   const [newCertificate, setNewCertificate] = useState({
     name: "",
     org: "",
     date: "",
     url: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSaveCertificate = () => {
-    if (isEditing) {
-      const updatedCertificates = [...portfolioData.certificates];
-      updatedCertificates[currentCertificate] = newCertificate; // Update existing certificate
-      setPortfolioData({ certificates: updatedCertificates });
-    } else {
-      // Add new certificate
-      setPortfolioData({
-        certificates: [...portfolioData.certificates, newCertificate],
-      });
-    }
-    setShowModal(false); // Close modal after saving
+  useEffect(() => {
+    // Fetch portfolio data from Firestore
+    const fetchPortfolioData = async () => {
+      if (!currentUser) return;
+
+      setLoading(true);
+      try {
+        const docRef = doc(db, "portfolios", currentUser.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setPortfolioData(docSnap.data());
+        } else {
+          console.log("No portfolio data found!");
+        }
+      } catch (error) {
+        console.error("Error fetching portfolio data:", error);
+        setError("Failed to fetch portfolio data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolioData();
+  }, [currentUser]);
+
+  const handleAddCertificate = () => {
+    setIsEditing(false);
+    setNewCertificate({ name: "", org: "", date: "", url: "" });
+    setShowModal(true);
   };
 
-  const handleSaveChanges = (e) => {
-    e.preventDefault();
-    if (errors.length === 0) {
-      localStorage.setItem(
-        "certificates",
-        JSON.stringify(portfolioData.certificates)
+  const handleEditCertificate = () => {
+    setIsEditing(true);
+    setShowModal(true);
+  };
+
+  const handleSaveCertificate = async () => {
+    try {
+      let updatedCertificates;
+      if (isEditing) {
+        updatedCertificates = [...portfolioData.certificates];
+        updatedCertificates[selectedCertificate] = newCertificate;
+      } else {
+        updatedCertificates = [...portfolioData.certificates, newCertificate];
+      }
+
+      const updatedPortfolio = { ...portfolioData, certificates: updatedCertificates };
+      setPortfolioData(updatedPortfolio);
+
+      const docRef = doc(db, "portfolios", currentUser.uid);
+      await setDoc(docRef, updatedPortfolio, { merge: true });
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error saving certificate:", error);
+      setError("Failed to save certificate. Please try again.");
+    }
+  };
+
+  const handleDeleteCertificate = async (indexToDelete) => {
+    try {
+      const updatedCertificates = portfolioData.certificates.filter(
+        (_, index) => index !== indexToDelete
       );
-      alert("Portfolio updated and saved successfully!");
-    } else {
-      alert("Please resolve the errors before saving.");
+
+      const updatedPortfolio = { ...portfolioData, certificates: updatedCertificates };
+      setPortfolioData(updatedPortfolio);
+
+      const docRef = doc(db, "portfolios", currentUser.uid);
+      await setDoc(docRef, updatedPortfolio, { merge: true });
+    } catch (error) {
+      console.error("Error deleting certificate:", error);
+      setError("Failed to delete certificate. Please try again.");
     }
   };
 
-  const handleDeleteCertificate = (indexToDelete) => {
-    const updatedCertificates = portfolioData.certificates.filter(
-      (_, index) => index !== indexToDelete
-    );
-    setPortfolioData({ certificates: updatedCertificates });
-    setShowModal(false); // Close modal after deletion
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const fileUrl = URL.createObjectURL(file); // Generate a preview URL
+      setNewCertificate((prev) => ({ ...prev, url: fileUrl }));
+    }
   };
-  const [portfolioData, setPortfolioData] = useState({
-    certificates: [
-      {
-        id: 1,
-        name: "Certificate of Participation",
-        org: "Google Developer Student Clubs",
-        date: "Apr 2024",
-        url: "certificate-url.png", // Placeholder for certificate icon/image
-      },
-      {
-        id: 2,
-        name: "Certificate for Teaching Assistantship",
-        org: "Forman Christian College",
-        date: "Feb 2024",
-        url: "certificate-url2.png", // Placeholder for certificate icon/image
-      },
-    ],
-  });
+
   return (
     <div className="profile-section">
       <h2>Artist Portfolio</h2>
+      {loading && <p>Loading...</p>}
+      {error && <p className="error-message">{error}</p>}
+
       {/* Portfolio Link */}
       <div className="form-section">
         <label>Portfolio Link</label>
@@ -144,21 +120,16 @@ const ArtistPortfolio = () => {
           placeholder="Add external link to your portfolio"
         />
       </div>
+
       {/* Certifications Section */}
       <div className="certification-section">
         <div className="certification-header">
           <h3>Licenses & certifications</h3>
           <div className="certification-actions">
-            <button
-              className="add-certification"
-              onClick={handleAddCertificate}
-            >
+            <button className="add-certification" onClick={handleAddCertificate}>
               <FaPlus />
             </button>
-            <button
-              className="edit-certification"
-              onClick={handleEditCertificate}
-            >
+            <button className="edit-certification" onClick={handleEditCertificate}>
               <FaPencilAlt />
             </button>
           </div>
@@ -172,7 +143,7 @@ const ArtistPortfolio = () => {
               <li
                 key={index}
                 className="certification-item"
-                onClick={() => setSelectedCertificate(cert)}
+                onClick={() => setSelectedCertificate(index)}
               >
                 <div className="cert-info">
                   <span className="cert-name">{cert.name}</span>
@@ -322,25 +293,25 @@ const ArtistPortfolio = () => {
       )}
 
       {/* Modal for Viewing Certificate Details */}
-      {selectedCertificate && (
+      {selectedCertificate !== null && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Certificate Details</h3>
             <div className="cert-details">
               <p>
-                <strong>Certificate Name:</strong> {selectedCertificate.name}
+                <strong>Certificate Name:</strong> {portfolioData.certificates[selectedCertificate]?.name}
               </p>
               <p>
-                <strong>Issued By:</strong> {selectedCertificate.org}
+                <strong>Issued By:</strong> {portfolioData.certificates[selectedCertificate]?.org}
               </p>
               <p>
-                <strong>Issued Date:</strong> {selectedCertificate.date}
+                <strong>Issued Date:</strong> {portfolioData.certificates[selectedCertificate]?.date}
               </p>
-              {selectedCertificate.fileUrl && (
+              {portfolioData.certificates[selectedCertificate]?.url && (
                 <p>
                   <strong>View/Download Certificate:</strong>{" "}
                   <a
-                    href={selectedCertificate.fileUrl}
+                    href={portfolioData.certificates[selectedCertificate]?.url}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

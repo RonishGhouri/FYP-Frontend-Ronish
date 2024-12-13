@@ -24,7 +24,7 @@ const ClientSidebar = () => {
 
   return (
     <aside className="client-sidebar">
-      <RouterLink to="/client-dashboard">
+      <RouterLink to="/client/">
         <img src={logo} alt="logo" className="client-logo" />
       </RouterLink>
       <ul>

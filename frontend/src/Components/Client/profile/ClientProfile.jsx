@@ -15,7 +15,7 @@ import ProfileInformation from "./ProfileInformation";
 import PersonalDetails from "./PersonalDetails";
 import Notifications from "./Notifications";
 import PasswordSecurity from "./PasswordSecurity";
-import PrivacySettings from "./PrivacySettings";
+
 import AccountSettings from "./AccountSettings";
 
 const ClientProfile = () => {
@@ -48,8 +48,6 @@ const ClientProfile = () => {
         return <Notifications />;
       case "passwordSecurity":
         return <PasswordSecurity />;
-      case "privacySettings":
-        return <PrivacySettings />;
       case "accountSettings":
         return <AccountSettings/>;
       default:
@@ -91,13 +89,6 @@ const ClientProfile = () => {
             >
               <FaLock />
               &nbsp; Password & Security
-            </li>
-            <li
-              onClick={() => handleMenuChange("privacySettings")}
-              className={selectedMenu === "privacySettings" ? "active" : ""}
-            >
-              <FaShieldAlt />
-              &nbsp; Privacy Settings
             </li>
             <li
               onClick={() => handleMenuChange("accountSettings")}
