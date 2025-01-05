@@ -1,31 +1,27 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../AuthNavbar/AuthNavbar";
-import { auth, db } from "../../firebaseConfig"; // Import Firebase Authentication and Firestore
+import { auth, db } from "../../firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import { toast } from "react-toastify"; // Import Toastify
+import "react-toastify/dist/ReactToastify.css";
 import "./Login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(""); // Reset error state before processing the form
+    setLoading(true); // Start loading state
 
     try {
       // Sign in with Firebase Authentication
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       // Fetch the user's role from Firestore
@@ -33,26 +29,40 @@ const Login = () => {
 
       if (userDoc.exists()) {
         const userRole = userDoc.data().role;
-        console.log(userRole);
-        setRole(userRole); // Set role from Firestore
+        setRole(userRole);
 
-        // Navigate based on the user's role
-        if (userRole === "artist") {
-          console.log("Navigating to artist...");
-          setTimeout(() => {
-            navigate('/artist/');
-          }, 500);
-        } else if (userRole === "client") {
-          console.log("Navigating to client...");
-          setTimeout(() => {
-            navigate("/client/");
-          }, 500);
-        }
+        // Success notification
+        toast.success("Login successful!");
+
+        // Redirect user based on role
+        setTimeout(() => {
+          navigate(userRole === "artist" ? "/artist/" : "/client/");
+        }, 1000);
       } else {
-        setError("User data not found");
+        toast.error("User data not found in the database.");
       }
     } catch (error) {
-      setError(error.message);
+      // Firebase Error Mapping
+      let errorMessage = "An unexpected error occurred. Please try again.";
+
+      switch (error.code) {
+        case "auth/user-not-found":
+          errorMessage = "No account found with this email.";
+          break;
+        case "auth/wrong-password":
+          errorMessage = "Incorrect password. Please try again.";
+          break;
+        case "auth/invalid-email":
+          errorMessage = "Invalid email format.";
+          break;
+        case "auth/too-many-requests":
+          errorMessage = "Too many login attempts. Please try again later.";
+          break;
+        default:
+          errorMessage = "Something went wrong. Please check your credentials.";
+      }
+
+      toast.error(errorMessage);
     } finally {
       setLoading(false); // End loading state
     }
@@ -64,9 +74,6 @@ const Login = () => {
       <div className="auth-form-wrapper">
         <h2>Log In</h2>
         <p className="subheading">Welcome back! Please log in to continue.</p>
-
-        {/* Display error message */}
-        {error && <p className="error-msg">{error}</p>}
 
         {/* Display role if user is authenticated */}
         {role && (
@@ -85,6 +92,7 @@ const Login = () => {
             required
             className="auth-input"
             autoComplete="email"
+            disabled={loading} // Disable input during loading
           />
           <input
             type="password"
@@ -94,6 +102,7 @@ const Login = () => {
             required
             className="auth-input"
             autoComplete="current-password"
+            disabled={loading} // Disable input during loading
           />
 
           <button type="submit" className="auth-btn" disabled={loading}>

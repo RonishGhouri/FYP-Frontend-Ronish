@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../../authContext"; // Authentication context
+import { useAuth } from "../../authContext"; // Use your authentication context
 import { db } from "../../firebaseConfig"; // Firestore configuration
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { ThreeDot } from "react-loading-indicators"; // Import Atom loader
 import "./Notifications.css";
+import { toast } from "react-toastify"; // Import Toastify
+import "react-toastify/dist/ReactToastify.css";
 
 function Notifications() {
   const { currentUser } = useAuth(); // Get the authenticated user
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
-
+  const [isSaving, setIsSaving] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
-    emailNotifications: {
-      bookingUpdates: true,
-    },
-    smsNotifications: false,
+    chatMessageNotifications: false,
+    bookingNotifications: false,
+    paymentNotifications: false,
     soundAlerts: false,
   });
 
@@ -33,17 +33,13 @@ function Notifications() {
           setNotificationSettings((prevSettings) => ({
             ...prevSettings,
             ...fetchedSettings,
-            emailNotifications: {
-              ...prevSettings.emailNotifications,
-              ...(fetchedSettings.emailNotifications || {}),
-            },
           }));
         } else {
           console.log("No notification settings found!");
         }
       } catch (error) {
         console.error("Error fetching notification settings:", error);
-        setError("Failed to fetch notification settings. Please try again.");
+        toast.error("Failed to fetch notification settings. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -54,71 +50,72 @@ function Notifications() {
 
   const handleNotificationChange = (e) => {
     const { name, checked } = e.target;
-    if (name.startsWith("emailNotifications")) {
-      const notificationType = name.split(".")[1];
-      setNotificationSettings((prevSettings) => ({
-        ...prevSettings,
-        emailNotifications: {
-          ...prevSettings.emailNotifications,
-          [notificationType]: checked,
-        },
-      }));
-    } else {
-      setNotificationSettings((prevSettings) => ({
-        ...prevSettings,
-        [name]: checked,
-      }));
-    }
+    setNotificationSettings((prevSettings) => ({
+      ...prevSettings,
+      [name]: checked,
+    }));
   };
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setSuccess(false);
-    setError("");
+    setIsSaving(true);
 
     try {
       const docRef = doc(db, "users", currentUser.uid);
       await setDoc(docRef, { notificationSettings }, { merge: true });
-      setSuccess(true);
+      toast.success("Notification settings updated successfully!");
     } catch (error) {
-      console.error("Error saving notification settings:", error);
-      setError("Failed to save notification settings. Please try again.");
+      toast.error("Failed to save notification settings. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSaving(false);
     }
   };
 
   return (
     <div className="profile-section">
       <h2>Notifications</h2>
-      {loading && <p>Loading...</p>}
-      {success && (
-        <p className="success-message">Notification settings updated successfully!</p>
+      {loading && (
+        <div style={styles.overlay}>
+          <div style={styles.loaderContainer}>
+            <ThreeDot
+              color="#212ea0" // Loader color
+              size="small" // Loader size
+            />
+          </div>
+        </div>
       )}
-      {error && <p className="error-message">{error}</p>}
-
       <form onSubmit={handleSaveChanges}>
         <div className="form-section">
-          <label>Email Notifications (Booking Updates)</label>
+          <label>Chat Message Notifications</label>
           <input
             type="checkbox"
-            name="emailNotifications.bookingUpdates"
-            checked={notificationSettings.emailNotifications.bookingUpdates}
+            name="chatMessageNotifications"
+            checked={notificationSettings.chatMessageNotifications}
             onChange={handleNotificationChange}
           />
-          Receive booking update emails
+          Enable chat message notifications
         </div>
 
         <div className="form-section">
-          <label>SMS Notifications</label>
+          <label>Booking Notifications</label>
           <input
             type="checkbox"
-            name="smsNotifications"
-            checked={notificationSettings.smsNotifications}
+            name="bookingNotifications"
+            checked={notificationSettings.bookingNotifications}
             onChange={handleNotificationChange}
           />
-          Enable SMS notifications
+          Enable booking notifications
+        </div>
+
+        <div className="form-section">
+          <label>Payment Notifications</label>
+          <input
+            type="checkbox"
+            name="paymentNotifications"
+            checked={notificationSettings.paymentNotifications}
+            onChange={handleNotificationChange}
+          />
+          Enable payment notifications
         </div>
 
         <div className="form-section">
@@ -133,13 +130,37 @@ function Notifications() {
         </div>
 
         <div className="form-section">
-          <button type="submit" className="save-button" disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
+          <button type="submit" className="save-button" disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>
     </div>
   );
 }
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Grey transparent background
+    zIndex: 9999, // Ensure the loader appears above everything else
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loaderContainer: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "none",
+    padding: "20px 40px",
+    borderRadius: "8px", // Rounded corners for the popup
+  },
+};
 
 export default Notifications;

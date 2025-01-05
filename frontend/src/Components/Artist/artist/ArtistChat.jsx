@@ -1,197 +1,137 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  FaPaperclip,
-  FaEllipsisV,
-  FaTimes,
-  FaCheck,
-} from "react-icons/fa";
+import { FaEllipsisV, FaCheck } from "react-icons/fa";
 import { useLocation } from "react-router-dom";
+import { db } from "../../firebaseConfig";
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  onSnapshot,
+} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import "./ArtistChat.css";
 import ArtistSidebar from "./sidebar/ArtistSidebar";
 import ArtistHeader from "./header/ArtistHeader";
 
 const ArtistChat = () => {
-  const [messages, setMessages] = useState({});
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [chats, setChats] = useState([]);
   const [currentChat, setCurrentChat] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isCustomerTyping, setIsCustomerTyping] = useState(false);
   const [activeChatMenu, setActiveChatMenu] = useState(null);
-  const [activeMessageId, setActiveMessageId] = useState(null);
-  const [selectedMedia, setSelectedMedia] = useState(null);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [selectedProfilePicture, setSelectedProfilePicture] = useState(null);
   const messagesEndRef = useRef(null);
-  const fileInputRef = useRef(null);
+  const chatMenuRef = useRef(null);
+  const auth = getAuth();
+
   const location = useLocation();
 
-  const chatMenuRef = useRef(null);
-  const messageMenuRef = useRef(null);
-
-  // Load chats and messages from localStorage on component mount
   useEffect(() => {
-    const savedChats = JSON.parse(localStorage.getItem("chats")) || [];
-    const savedMessages = JSON.parse(localStorage.getItem("messages")) || {};
+    const fetchChats = async () => {
+      const artistId = auth.currentUser?.uid; // Get current artist ID
+      const chatsCollection = collection(db, "chats");
 
-    if (savedChats.length > 0) {
-      setChats(savedChats);
-    }
+      if (!artistId) {
+        console.error("Artist ID not found");
+        return;
+      }
 
-    if (Object.keys(savedMessages).length > 0) {
-      setMessages(savedMessages);
-    }
+      const unsubscribe = onSnapshot(chatsCollection, (snapshot) => {
+        const fetchedChats = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .filter(
+            (chat) =>
+              chat.artist?.id === artistId && chat.deletedByArtist === false
+          ); // Match artist ID and ensure chat is not deleted by the artist
+
+        setChats(fetchedChats);
+      });
+
+      return unsubscribe;
+    };
+
+    fetchChats();
   }, []);
 
-  // Sync chats and messages with localStorage whenever they change
   useEffect(() => {
-    localStorage.setItem("chats", JSON.stringify(chats));
-  }, [chats]);
-
-  useEffect(() => {
-    localStorage.setItem("messages", JSON.stringify(messages));
-  }, [messages]);
-
-  // Handle new client conversation through location state
-  useEffect(() => {
-    if (location.state && location.state.client) {
-      const client = location.state.client;
-
-      setChats((prevChats) => {
-        const isAlreadyInChats = prevChats.some((chat) => chat.id === client.id);
-        if (!isAlreadyInChats) {
-          const updatedChats = [...prevChats, { ...client, status: "Online" }];
-          localStorage.setItem("chats", JSON.stringify(updatedChats));
-          return updatedChats;
-        }
-        return prevChats;
-      });
-
-      setMessages((prevMessages) => {
-        if (!prevMessages[client.id]) {
-          const updatedMessages = { ...prevMessages, [client.id]: [] };
-          localStorage.setItem("messages", JSON.stringify(updatedMessages));
-          return updatedMessages;
-        }
-        return prevMessages;
-      });
-
-      setCurrentChat(client.id);
+    if (!currentChat) {
+      setMessages([]);
+      return;
     }
-  }, [location.state]);
 
-  // Close chat and message menus on outside click
+    const chatDocRef = doc(db, "chats", currentChat);
+
+    const unsubscribe = onSnapshot(chatDocRef, (docSnapshot) => {
+      if (docSnapshot.exists()) {
+        const chatData = docSnapshot.data();
+        setMessages(chatData.artistMessages || []);
+      } else {
+        setMessages([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [currentChat]);
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        activeChatMenu &&
-        chatMenuRef.current &&
-        !chatMenuRef.current.contains(event.target)
-      ) {
-        setActiveChatMenu(null);
-      }
-      if (
-        deleteConfirm &&
-        messageMenuRef.current &&
-        !messageMenuRef.current.contains(event.target)
-      ) {
-        setDeleteConfirm(false);
-        setActiveMessageId(null);
+    if (!location.state?.client) return;
+
+    const initChatWithClient = async () => {
+      const client = location.state.client;
+      const artistId = auth.currentUser?.uid;
+      const chatId = `${client.id}_${artistId}`;
+
+      try {
+        // Prevent overwriting if currentChat is already set
+        if (currentChat && currentChat !== chatId) {
+          console.log("currentChat already set:", currentChat);
+          return;
+        }
+
+        // Check if the chat already exists in the current state
+        if (chats.some((chat) => chat.id === chatId)) {
+          setCurrentChat(chatId);
+          return;
+        }
+
+        
+      } catch (error) {
+        console.error("Error initializing chat with client:", error);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    initChatWithClient();
+  }, [location.state, chats, currentChat]);
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !currentChat) return;
+
+    const newMessageData = {
+      id: Date.now().toString(),
+      sender: "Artist",
+      message: newMessage.trim(),
+      timestamp: new Date().toISOString(),
+      read: true,
     };
-  }, [activeChatMenu, deleteConfirm]);
 
-  // Chat actions
-  const deleteChat = (chatId) => {
-    setChats((prevChats) => {
-      const updatedChats = prevChats.filter((chat) => chat.id !== chatId);
-      localStorage.setItem("chats", JSON.stringify(updatedChats));
-      return updatedChats;
-    });
+    const chatDoc = doc(db, "chats", currentChat);
 
-    setMessages((prevMessages) => {
-      const updatedMessages = { ...prevMessages };
-      delete updatedMessages[chatId];
-      localStorage.setItem("messages", JSON.stringify(updatedMessages));
-      return updatedMessages;
-    });
-
-    setActiveChatMenu(null);
-    if (currentChat === chatId) setCurrentChat(null);
-  };
-
-  const deleteMessage = (chatId, messageId) => {
-    setMessages((prevMessages) => {
-      const updatedMessages = {
-        ...prevMessages,
-        [chatId]: prevMessages[chatId].filter((msg) => msg.id !== messageId),
-      };
-      localStorage.setItem("messages", JSON.stringify(updatedMessages));
-      return updatedMessages;
-    });
-    setDeleteConfirm(false);
-    setActiveMessageId(null);
-  };
-
-  const handleNewConversation = (chatId) => {
-    setCurrentChat(chatId);
-    setActiveChatMenu(null);
-  };
-
-  const toggleChatMenu = (chatId) => {
-    setActiveChatMenu(activeChatMenu === chatId ? null : chatId);
-  };
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() && currentChat) {
-      const newMessageData = {
-        id: Date.now().toString(), // Unique ID for each message
-        sender: "Artist",
-        message: newMessage,
-        timestamp: new Date().toLocaleTimeString(),
-        read: true,
-      };
-
-      setMessages((prevMessages) => {
-        const updatedMessages = {
-          ...prevMessages,
-          [currentChat]: [...(prevMessages[currentChat] || []), newMessageData],
-        };
-        localStorage.setItem("messages", JSON.stringify(updatedMessages));
-        return updatedMessages;
+    try {
+      await updateDoc(chatDoc, {
+        artistMessages: arrayUnion(newMessageData),
+        clientMessages: arrayUnion(newMessageData),
+        deletedByClient: false,
       });
+
       setNewMessage("");
       scrollToBottom();
-    }
-  };
-
-  // Handle file attachment
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file && currentChat) {
-      const fileURL = URL.createObjectURL(file);
-      const newFileMessage = {
-        id: Date.now().toString(),
-        sender: "Artist",
-        message: "",
-        timestamp: new Date().toLocaleTimeString(),
-        read: true,
-        file: { name: file.name, url: fileURL, type: file.type },
-      };
-
-      setMessages((prevMessages) => {
-        const updatedMessages = {
-          ...prevMessages,
-          [currentChat]: [...(prevMessages[currentChat] || []), newFileMessage],
-        };
-        localStorage.setItem("messages", JSON.stringify(updatedMessages));
-        return updatedMessages;
-      });
-      scrollToBottom();
+    } catch (error) {
+      console.error("Error sending message:", error);
     }
   };
 
@@ -199,88 +139,80 @@ const ArtistChat = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleTypingIndicator = (e) => {
-    setNewMessage(e.target.value);
-    setIsTyping(true);
-    setTimeout(() => setIsTyping(false), 2000);
+  const handleNewConversation = (chatId) => {
+    setCurrentChat(chatId);
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSendMessage();
+  const toggleChatMenu = (chatId) => {
+    setActiveChatMenu(activeChatMenu === chatId ? null : chatId);
+  };
+
+  const deleteChat = async (chatId) => {
+    try {
+      setChats((prevChats) => prevChats.filter((chat) => chat.id !== chatId));
+      setCurrentChat(null);
+
+      const chatDoc = doc(db, "chats", chatId);
+      await updateDoc(chatDoc, {
+        artistMessages: [],
+        deletedByArtist: true,
+      });
+      setCurrentChat(null);
+
+      console.log(`${currentChat}`);
+      console.log(`Chat with ID ${chatId} successfully deleted.`);
+    } catch (error) {
+      console.error(`Error deleting chat with ID ${chatId}:`, error);
     }
   };
 
-  const markChatAsImportant = (chatId) => {
-    setChats((prevChats) => {
-      const updatedChats = prevChats.map((chat) =>
-        chat.id === chatId ? { ...chat, important: !chat.important } : chat
-      );
-      localStorage.setItem("chats", JSON.stringify(updatedChats));
-      return updatedChats;
-    });
-    setActiveChatMenu(null);
+  const showProfilePicture = (avatar) => {
+    setSelectedProfilePicture(avatar);
   };
 
-  const handleMediaClick = (file) => {
-    setSelectedMedia(file);
-  };
-
-  const closeModal = () => {
-    setSelectedMedia(null);
-  };
-
-  useEffect(() => {
-    const typingTimeout = setTimeout(() => {
-      if (currentChat) {
-        setIsCustomerTyping(true);
-        setTimeout(() => setIsCustomerTyping(false), 3000);
-      }
-    }, 5000);
-    return () => clearTimeout(typingTimeout);
-  }, [currentChat]);
-
-  const confirmDeleteMessage = (messageId) => {
-    setActiveMessageId(messageId);
-    setDeleteConfirm(true);
+  const closeProfilePopup = () => {
+    setSelectedProfilePicture(null);
   };
 
   return (
     <div className="artist-dashboard">
-      {/* Sidebar */}
       <ArtistSidebar />
 
-      {/* Main Dashboard Content */}
       <div className="artist-main-dashboard">
-        {/* Top Bar */}
         <ArtistHeader />
 
-        {/* Chats and Chat Box */}
         <div className="artist-chat-container">
           <div className="artist-chat-chats">
-            <div className="chats-headerr">
+            <div className="chats-header">
               <h4>Chats</h4>
             </div>
-            <ul>
+            <br />
+            <ul className="chat-list">
               {chats.map((chat) => (
                 <li
                   key={chat.id}
-                  className="chat-item"
+                  className={`chat-item ${
+                    currentChat === chat.id ? "active-chat" : ""
+                  }`}
                   onClick={() => handleNewConversation(chat.id)}
                 >
                   <div className="chat-info">
                     <img
-                      src={chat.avatar}
-                      alt={chat.name}
+                      src={chat.client?.avatar || "default-avatar.png"}
+                      alt={chat.client?.name || "Client"}
                       className="chat-avatar"
                     />
                     <div className="chat-name-status">
-                      <span className="chat-name">{chat.name}</span>
-                      {chat.status === "Online" ? (
-                        <span className="online-dot"></span>
-                      ) : (
-                        <span className="offline-dot"></span>
-                      )}
+                      <span className="chat-name">
+                        {chat.client?.name || "Client"}
+                      </span>
+                      <span
+                        className={`status-dot ${
+                          chat.status === "Online"
+                            ? "online-dot"
+                            : "offline-dot"
+                        }`}
+                      ></span>
                     </div>
                   </div>
                   <FaEllipsisV
@@ -290,13 +222,9 @@ const ArtistChat = () => {
                       toggleChatMenu(chat.id);
                     }}
                   />
-
                   {activeChatMenu === chat.id && (
                     <div ref={chatMenuRef} className="chat-action-menu">
                       <p onClick={() => deleteChat(chat.id)}>Delete Chat</p>
-                      <p onClick={() => markChatAsImportant(chat.id)}>
-                        {chat.important ? "Unmark Important" : "Mark as Important"}
-                      </p>
                       <p onClick={() => setActiveChatMenu(null)}>Cancel</p>
                     </div>
                   )}
@@ -305,91 +233,60 @@ const ArtistChat = () => {
             </ul>
           </div>
 
-          {/* Chat Box */}
-          <div className={`chats-box ${deleteConfirm ? "no-scroll" : ""}`}>
+          <div className="chats-box">
             {currentChat ? (
               <>
                 <div className="chat-header">
                   <div className="chat-header-content">
-                    <h4>{chats.find((c) => c.id === currentChat)?.name}</h4>
-                    <span className="online-status">
-                      {chats.find((c) => c.id === currentChat)?.status ===
-                      "Online"
-                        ? "Online"
-                        : "Offline"}
-                    </span>
+                    <img
+                      src={
+                        chats.find((c) => c.id === currentChat)?.client
+                          ?.avatar || "default-avatar.png"
+                      }
+                      alt={
+                        chats.find((c) => c.id === currentChat)?.client?.name ||
+                        "Client"
+                      }
+                      className="header-avatar"
+                    />
+                    <div className="header-text">
+                      <h4>
+                        {chats.find((c) => c.id === currentChat)?.client
+                          ?.name || "Client"}
+                      </h4>
+                      <span className="online-status">
+                        {chats.find((c) => c.id === currentChat)?.status ===
+                        "Online"
+                          ? "Online"
+                          : "Offline"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className={`chats-messages ${deleteConfirm ? 'no-scroll' : ''}`}>
-                  {messages[currentChat]?.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`chats-message ${
-                        msg.sender === "Artist"
-                          ? "chats-sent"
-                          : "chats-received"
-                      }`}
-                    >
+
+                <div className="chats-messages">
+                  {messages.length > 0 ? (
+                    messages.map((msg) => (
                       <div
-                        className={`chats-message-content ${
-                          msg.important ? "important" : ""
+                        key={msg.id}
+                        className={`chats-message ${
+                          msg.sender === "Artist"
+                            ? "chats-sent"
+                            : "chats-received"
                         }`}
                       >
-                        {msg.file && msg.file.type ? (
-                          msg.file.type.startsWith("image") ? (
-                            <img
-                              src={msg.file.url}
-                              alt={msg.file.name}
-                              className="attached-image"
-                              onClick={() => handleMediaClick(msg.file)}
-                            />
-                          ) : msg.file.type.startsWith("video") ? (
-                            <video
-                              controls
-                              className="attached-video"
-                              onClick={() => handleMediaClick(msg.file)}
-                            >
-                              <source src={msg.file.url} type={msg.file.type} />
-                              Your browser does not support the video tag.
-                            </video>
-                          ) : (
-                            <a
-                              href={msg.file.url}
-                              download={msg.file.name}
-                              className="attached-document"
-                            >
-                              {msg.file.name}
-                            </a>
-                          )
-                        ) : (
+                        <div className="chats-message-content">
                           <p>{msg.message}</p>
-                        )}
-                        <small>{msg.timestamp}</small>&nbsp;
-                        {msg.read && <FaCheck className="read-receipt-icon" />}
-
-                        {/* Edit icon for each message */}
-                        <FaEllipsisV
-                          className="message-edit-icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            confirmDeleteMessage(msg.id);
-                          }}
-                        />
-
-                        {/* Message action menu */}
-                        {deleteConfirm && activeMessageId === msg.id && (
-                          <div
-                            ref={messageMenuRef}
-                            className="message-action-menu"
-                          >
-                            <p onClick={() => deleteMessage(currentChat, msg.id)}>
-                              Delete Message
-                            </p>
-                          </div>
-                        )}
+                          <small>{msg.timestamp}</small>&nbsp;
+                          {msg.read && (
+                            <FaCheck className="read-receipt-icon" />
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="no-messages-placeholder">No messages yet</p>
+                  )}
                   {isCustomerTyping && (
                     <div className="typing-indicator">typing...</div>
                   )}
@@ -405,24 +302,15 @@ const ArtistChat = () => {
             {currentChat && (
               <div className="chats-message-input">
                 <input
-                  type="file"
-                  ref={fileInputRef}
-                  style={{ display: "none" }}
-                  onChange={handleFileChange}
-                />
-                <FaPaperclip
-                  className="add-attachment-icon"
-                  size={30}
-                  onClick={() => fileInputRef.current.click()}
-                />
-                <input
                   type="text"
                   placeholder="Type your message..."
                   value={newMessage}
-                  onChange={handleTypingIndicator}
-                  onKeyPress={handleKeyPress}
+                  onChange={(e) => setNewMessage(e.target.value)}
                 />
-                <button onClick={handleSendMessage} className="send-message-btn">
+                <button
+                  onClick={handleSendMessage}
+                  className="send-message-btn"
+                >
                   Send
                 </button>
               </div>
@@ -431,19 +319,14 @@ const ArtistChat = () => {
         </div>
       </div>
 
-      {/* Full-view modal for media */}
-      {selectedMedia && (
-        <div className="media-modal" onClick={closeModal}>
-          <div className="media-modal-content" onClick={(e) => e.stopPropagation()}>
-            <FaTimes className="close-modal-icon" onClick={closeModal} />
-            {selectedMedia.type.startsWith("image") ? (
-              <img src={selectedMedia.url} alt={selectedMedia.name} className="modal-image" />
-            ) : selectedMedia.type.startsWith("video") ? (
-              <video controls className="modal-video">
-                <source src={selectedMedia.url} type={selectedMedia.type} />
-                Your browser does not support the video tag.
-              </video>
-            ) : null}
+      {selectedProfilePicture && (
+        <div className="profile-popups" onClick={closeProfilePopup}>
+          <div className="popups-content">
+            <img
+              src={selectedProfilePicture}
+              alt="Profile"
+              className="popups-avatar"
+            />
           </div>
         </div>
       )}
@@ -451,4 +334,4 @@ const ArtistChat = () => {
   );
 };
 
-export default ArtistChat;
+export default ArtistChat; 

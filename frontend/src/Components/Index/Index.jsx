@@ -15,22 +15,25 @@ import NewPassword from "../AuthenticationPages/NewPassword/NewPassword.jsx";
 import ClientDashboard from "../Client/ClientDashboard.jsx";
 import ClientProfile from "../Client/profile/ClientProfile.jsx";
 
-
 import RequireAuth from "../AuthenticationPages/RequireAuth";
 
 /* Import the newly created artist management components */
 import ArtistDashboard from "../Artist/artist/ArtistDashboard.jsx";
 import ArtistProfile from "../Artist/artist/profile/ArtistProfile.jsx";
-import ArtistBookings from "../Artist/artist/ArtistBookings";
+import ArtistBookings from "../Artist/artist/bookings/ArtistBookings.jsx";
 import ArtistEvents from "../Artist/artist/ArtistEvents";
 import ArtistContent from "../Artist/artist/ArtistContent";
 import ArtistPayment from "../Artist/artist/ArtistPayment";
 import ArtistChat from "../Artist/artist/ArtistChat";
 import ClientChat from "../Client/ClientChat.jsx";
 import ClientBrowserArtist from "../Client/browse/ClientBrowserArtist.jsx";
-import ClientEvent from "../Client/Events/ClientEvent.jsx";
+import ClientEvent from "../Client/Events/Events/ClientEvent.jsx";
 import ClientBooking from "../Client/Bookings/ClientBooking.jsx";
 import ClientPayment from "../Client/Payment/PaymentDashboard.jsx";
+import ArtistDetailPage from "../Client/browse/ArtistDetailPage.jsx";
+import ProfilePage from "../Client/browse/ProfilePage.jsx";
+
+
 
 function Index() {
   const location = useLocation(); // Get the current path
@@ -51,7 +54,7 @@ function Index() {
           element={
             <div>
               <Home />
-              <div className="container">
+              <div className="container-item">
                 <Title
                   subtitle="Our features"
                   title="Highlighting the Best of Our Offerings"
@@ -148,7 +151,7 @@ function Index() {
           path="/client/profile"
           element={
             <RequireAuth>
-              <ClientProfile/>
+              <ClientProfile />
             </RequireAuth>
           }
         />
@@ -193,7 +196,24 @@ function Index() {
           path="/client/payments"
           element={
             <RequireAuth>
-              <ClientPayment/>
+              <ClientPayment />
+            </RequireAuth>
+          }
+        />
+        {/* Add ArtistDetailPage and ProfilePage routes */}
+        <Route
+          path="/artist/detail"
+          element={
+            <RequireAuth>
+              <ArtistDetailPage/>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <ProfilePage />
             </RequireAuth>
           }
         />

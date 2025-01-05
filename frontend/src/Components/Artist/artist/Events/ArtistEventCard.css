@@ -1,0 +1,231 @@
+/* Artist Event Card Styles */
+.artist-event-card {
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  margin-bottom: 20px;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.artist-event-card:hover {
+  background-color: #ecf0f1;
+}
+
+/* Event Title and Booking Status */
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.artist-event-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+/* Artist Info Section */
+.artist-info {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.artist-info .artist-event-icon {
+  margin-right: 8px;
+  font-size: 1.2rem;
+  color: #3498db;
+}
+
+.artist-info span {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Client Phone Section */
+.artist-client-phone {
+  display: flex;
+  align-items: center;
+  margin-bottom: -3px;
+}
+
+.artist-client-phone span {
+  font-size: 1rem;
+  color: #000;
+}
+
+/* Event Details Section */
+.artist-event-card .artist-event-details {
+  margin-top: 10px;
+}
+
+.artist-event-card .artist-event-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.artist-event-card .artist-event-info span {
+  margin-left: 6px;
+  color: #555;
+  font-size: 1rem;
+}
+
+.artist-event-card .artist-event-icon {
+  margin-right: 8px;
+  font-size: 1.2rem;
+  color: #3498db;
+}
+
+/* Payment Status */
+.artist-payment-status {
+  font-size: 1rem;
+  color: #333;
+  margin-top: 10px;
+}
+
+/* Menu Icon (Three Vertical Dots) */
+.menu-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 20px; /* Increase clickable area */
+  height: 30px; /* Increase clickable area */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Horizontal Line Divider */
+.divider {
+  margin-top: 25px;
+  margin-bottom: 15px;
+  border-top: 1px solid #ccc;
+  width: 100%;
+}
+
+/* Booking Status */
+.artist-booking-status {
+  font-size: 1rem;
+  color: #333;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.artist-booking-status.pending {
+  background-color: #f39c12;
+  color: white;
+}
+
+.artist-booking-status.confirmed {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.artist-booking-status.completed {
+  background-color: #9b59b6;
+  color: white;
+}
+
+/* Dropdown Menu Styles */
+.dropdown-content {
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 160px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  margin-top: 25px;
+  right: 10px;
+  border-radius: 5px;
+}
+
+.dropdown-content button {
+  background-color: white;
+  color: black;
+  padding: 10px 15px;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius:10px ;
+}
+.dropdown-icon {
+  margin-right: 8px; /* Add space between the icon and text */
+  font-size: 1.2rem; /* Adjust icon size */
+}
+
+.dropdown-content button:hover {
+  background-color: #ecf0f1;
+}
+
+/* Cancel Reason Popup Styles */
+/* Cancel Popup */
+.cancel-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.cancel-popup-content {
+  position: relative;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  text-align: center;
+}
+
+.close-icon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.close-icon:hover {
+  color: #e74c3c;
+}
+
+textarea {
+  width: 100%;
+  height: 100px;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.cancel-popup-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cancel-popup-actions button:hover {
+  background-color: #2980b9;
+}

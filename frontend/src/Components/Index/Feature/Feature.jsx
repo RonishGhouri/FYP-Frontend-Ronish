@@ -21,13 +21,13 @@ const Feature = () => {
   };
 
   return (
-    <div className="feature">
-      <img src={next} className="next" onClick={forward} />
-      <img src={back} className="back" onClick={backward} />
-      <div className="slider">
+    <div className="feature-container">
+      <img src={next} className="feature-next" onClick={forward} alt="Next" />
+      <img src={back} className="feature-back" onClick={backward} alt="Back" />
+      <div className="feature-slider">
         <ul ref={slider}>
           <li>
-            <div className="slide">
+            <div className="feature-slide">
               <div className="feature-info">
                 <div>
                   <h3>Profiles</h3>
@@ -40,7 +40,7 @@ const Feature = () => {
             </div>
           </li>
           <li>
-            <div className="slide">
+            <div className="feature-slide">
               <div className="feature-info">
                 <div>
                   <h3>Event Management</h3>
@@ -53,7 +53,7 @@ const Feature = () => {
             </div>
           </li>
           <li>
-            <div className="slide">
+            <div className="feature-slide">
               <div className="feature-info">
                 <div>
                   <h3>Contract Management</h3>
@@ -66,7 +66,7 @@ const Feature = () => {
             </div>
           </li>
           <li>
-            <div className="slide">
+            <div className="feature-slide">
               <div className="feature-info">
                 <div>
                   <h3>Financial Tracking</h3>
@@ -79,7 +79,7 @@ const Feature = () => {
             </div>
           </li>
           <li>
-            <div className="slide">
+            <div className="feature-slide">
               <div className="feature-info">
                 <div>
                   <h3>Communication</h3>

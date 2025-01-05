@@ -1,0 +1,224 @@
+/* Reset and Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f3f4f6;
+  color: #333;
+}
+
+/* Layout for Sidebar and Header */
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 250px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background-color: #212ea0;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.main-dashboard {
+  margin-left: 250px;
+  padding: 0; /* Remove excessive padding */
+  background-color: #f3f4f6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Ensures it fills the remaining space */
+}
+
+.profileView-section {
+  width: 96.9%; /* Allow section to stretch fully */
+  margin-top: 100px;
+  margin-left: 20px;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  height: calc(100vh - 120px); /* Adjusted fixed height */
+  overflow-y: auto; /* Add vertical scrollbar */
+  box-sizing: border-box;
+}
+
+/* Profile Header Styles */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
+  
+  border-radius: 12px;
+}
+
+.profile-avatar img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #ddd;
+}
+.artists-rating {
+  font-size: 14px;
+  color: #ff9800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: -22px;
+
+}
+.socials-links {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-left: -75px;
+  margin-top: -85px;
+
+}
+
+.socials-logo {
+  width: 35px; /* Adjust width for a smaller logo */
+  height: 35px; /* Match height to the width */
+  object-fit: contain; /* Ensures the image fits without distortion */
+}
+
+.profile-details h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.bio {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.stat-counters {
+  display: flex;
+  gap: 2rem;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-label {
+  color: #666;
+}
+
+/* Tabs Styles */
+.tabs-section {
+  margin-top: 2rem;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.tab-button:hover,
+.tab-button.active {
+  color: #333;
+  font-weight: bold;
+  border-bottom: 2px solid #333;
+}
+
+/* Adjust Grid Content */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(150px, 1fr)
+  ); /* Reduce item width */
+  gap: 1rem; /* Reduce space between items */
+  margin-top: 1rem; /* Add slight spacing above grid */
+}
+
+.grid-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3; /* Reduce item height */
+  background-color: #f0f0f0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.grid-item:hover img {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+.video-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .stat-counters {
+    justify-content: center;
+  }
+
+  .content-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .main-dashboard {
+    margin-left: 0;
+  }
+
+  .sidebar {
+    display: none;
+  }
+}

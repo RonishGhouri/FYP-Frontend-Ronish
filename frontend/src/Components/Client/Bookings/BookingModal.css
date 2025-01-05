@@ -66,11 +66,9 @@
   padding: 14px 25px;
   font-size: 18px;
   border-radius: 8px;
-  border: 2px solid #0073e6;
-  background-color: white;
-  color: #0073e6;
+  background: #212ea0;
+  color: white;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -80,72 +78,169 @@
 
 /* Hover Effects */
 .modal-actions button:hover {
-  background-color: #0073e6;
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
   color: white;
-  transform: translateY(-2px);
 }
 
 .modal-actions button:active {
   transform: translateY(1px);
 }
 
-/* Specific Button Styling */
-.payment-button {
-  border-color: #4CAF50;
-  color: #4CAF50;
-}
-
-.payment-button:hover {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.chat-button {
-  border-color: #1E88E5;
-  color: #1E88E5;
-}
-
-.chat-button:hover {
-  background-color: #1E88E5;
-  color: white;
-}
-
-.edit-button {
-  border-color: #FFB300;
-  color: #FFB300;
-}
-
-.edit-button:hover {
-  background-color: #FFB300;
-  color: white;
-}
-
-.resubmit-button {
-  border-color: #8E24AA;
-  color: #8E24AA;
-}
-
-.resubmit-button:hover {
-  background-color: #8E24AA;
-  color: white;
+.modal-actions button:disabled {
+  background: #9b9a9a;
 }
 
 .cancel-button {
-  border-color: #f44336;
-  color: #f44336;
+  margin-left: 10px;
 }
 
-.cancel-button:hover {
-  background-color: #f44336;
+/* Reason Popup */
+.reason-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.reason-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.cancellation-reason-input {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.finalize-cancel-button,
+.close-popup-button {
+  margin: 10px 5px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.finalize-cancel-button {
+  background: red;
   color: white;
 }
 
-.close-button {
-  border-color: #757575;
-  color: #757575;
+.close-popup-button {
+  background: #212ea0;
+  color: white;
 }
 
-.close-button:hover {
-  background-color: #757575;
+.finalize-cancel-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+  color: white;
+}
+
+.close-popup-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+  color: white;
+}
+
+/* Feedback Popup */
+.feedback-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.feedback-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 350px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.feedback-popup-content h4 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.feedback-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.feedback-buttons button {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.feedback-excellent {
+  background: #4caf50;
+  color: white;
+}
+
+.feedback-average {
+  background: #ffeb3b;
+  color: black;
+}
+
+.feedback-bad {
+  background: #f44336;
+  color: white;
+}
+
+.feedback-excellent:hover {
+  background: #45a049;
+}
+
+.feedback-average:hover {
+  background: #e6c200;
+}
+
+.feedback-bad:hover {
+  background: #d32f2f;
+}
+
+.close-popup-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #212ea0;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-popup-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
   color: white;
 }

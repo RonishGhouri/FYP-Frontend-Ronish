@@ -1,0 +1,123 @@
+/* Artist Filter Component Styles */
+.artist-filter-container {
+    position: relative;
+}
+
+.artist-filter-btn {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center; /* Align icon and text */
+    gap: 8px; /* Space between icon and text */
+}
+
+.artist-filter-btn:hover {
+    background-color: #2980b9;
+}
+
+.artist-filter-btn i {
+    font-size: 1.2rem; /* Adjust the size of the icon */
+}
+
+.artist-filter-dropdown {
+    position: absolute;
+    top: 50px;
+    left: -220px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    z-index: 10;
+    padding: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.artist-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.artist-filter-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.artist-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: #3498db;
+    cursor: pointer;
+}
+
+.artist-filter-section {
+    margin-top: 20px;
+}
+
+.artist-filter-category {
+    margin-bottom: 20px;
+}
+
+.artist-filter-category h4 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.artist-filter-category select,
+.artist-filter-category input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.artist-date-range {
+    display: flex;
+    gap: 10px;
+}
+
+.artist-date-range input {
+    width: 48%;
+}
+
+.artist-filter-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.artist-apply-btn,
+.artist-reset-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+}
+
+.artist-apply-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.artist-apply-btn:hover {
+    background-color: #2980b9;
+}
+
+.artist-reset-btn {
+    background-color: #f1f1f1;
+    color: #333;
+}
+
+.artist-reset-btn:hover {
+    background-color: #ddd;
+}

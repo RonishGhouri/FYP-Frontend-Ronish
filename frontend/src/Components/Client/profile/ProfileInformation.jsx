@@ -3,18 +3,19 @@ import { FaPencilAlt } from "react-icons/fa";
 import { useAuth } from "../../authContext"; // Use your authentication context
 import { db } from "../../firebaseConfig"; // Firestore configuration
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { ThreeDot } from "react-loading-indicators"; // Import Atom loader
 import "./ProfileInformation.css";
+import { toast } from "react-toastify"; // Import Toastify
+import "react-toastify/dist/ReactToastify.css";
 
 function ProfileInformation() {
   const { currentUser } = useAuth(); // Get the authenticated user
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
 
   const [profileData, setProfileData] = useState({
     name: "",
-    username: "",
     profilePicture: "",
     bio: "",
     location: "",
@@ -27,7 +28,7 @@ function ProfileInformation() {
       setLoading(true);
 
       try {
-        const docRef = doc(db, "users", currentUser.uid); // Get the user's Firestore document from "userProfiles"
+        const docRef = doc(db, "users", currentUser.uid); // Get the user's Firestore document
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -41,9 +42,8 @@ function ProfileInformation() {
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
-        setError("Failed to fetch profile data. Please try again.");
       } finally {
-        setLoading(false);
+        setLoading(false); // Stop loader for fetching
       }
     };
 
@@ -77,28 +77,34 @@ function ProfileInformation() {
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setSuccess(false);
-    setError("");
+    setIsSaving(true); // Start saving loader
 
     try {
       const docRef = doc(db, "users", currentUser.uid); // Save to "userProfiles"
       await setDoc(docRef, { ...profileData }, { merge: true });
-      setSuccess(true);
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      console.error("Error saving profile:", error);
-      setError("Failed to save profile. Please try again.");
+      toast.error("Failed to save profile. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSaving(false); // Stop saving loader
     }
   };
 
   return (
     <div className="profile-section">
       <h2>Profile Information</h2>
-      {loading && <p>Loading...</p>}
-      {success && <p className="success-message">Profile updated successfully!</p>}
-      {error && <p className="error-message">{error}</p>}
+
+      {/* Fetching Loader */}
+      {loading && (
+        <div style={styles.overlay}>
+          <div style={styles.loaderContainer}>
+            <ThreeDot
+              color="#212ea0" // Loader color
+              size="small" // Loader size
+            />
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSaveChanges}>
         {/* Profile Picture */}
@@ -160,24 +166,13 @@ function ProfileInformation() {
           />
         </div>
 
-        {/* Name and Username */}
+        {/* Name */}
         <div className="form-section">
           <label>Name</label>
           <input
             type="text"
             name="name"
             value={profileData.name}
-            onChange={handleInputChange}
-            className="form-input"
-          />
-        </div>
-
-        <div className="form-section">
-          <label>Username</label>
-          <input
-            type="text"
-            name="username"
-            value={profileData.username}
             onChange={handleInputChange}
             className="form-input"
           />
@@ -195,7 +190,6 @@ function ProfileInformation() {
           />
         </div>
 
-        
         {/* Location */}
         <div className="form-section">
           <label>Location</label>
@@ -205,18 +199,43 @@ function ProfileInformation() {
             value={profileData.location}
             onChange={handleInputChange}
             className="form-input"
+            placeholder="e.g., 25-B, Gulberg III, Lahore"
           />
         </div>
 
         {/* Save Button */}
         <div className="form-section">
-          <button type="submit" className="save-button" disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
+          <button type="submit" className="save-button" disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>
     </div>
   );
 }
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Grey transparent background
+    zIndex: 9999, // Ensure the loader appears above everything else
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loaderContainer: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "none",
+    padding: "20px 40px",
+    borderRadius: "8px", // Rounded corners for the popup
+  },
+};
 
 export default ProfileInformation;

@@ -322,6 +322,58 @@ font-size: 18px;
 color: #212ea0;
 }
 
+/* Starting CSS for the star rating section */
+.stars-container {
+  display: flex;
+  align-items: center;
+  font-size: 24px; /* Adjust size of stars */
+  color: #ffc107; /* Default color for filled stars */
+}
+
+.star {
+  margin: 0 2px; /* Space between stars */
+  display: inline-block;
+  width: 24px; /* Star width */
+  height: 24px; /* Star height */
+  position: relative;
+}
+
+.star.filled {
+  color: #ffc107; /* Gold color for filled stars */
+}
+
+.star.empty {
+  color: #e4e5e9; /* Gray color for empty stars */
+}
+
+.star.half {
+  position: relative;
+  color: #ffc107; /* Half star color matches filled star */
+}
+
+.star.half::before {
+  content: "★";
+  position: absolute;
+  color: #e4e5e9; /* Background color for the empty half */
+  left: 0;
+  width: 50%; /* Cover half the star */
+  overflow: hidden;
+}
+
+/* Styling for the reviews link */
+.reviews-link {
+  font-size: 14px;
+  text-decoration: underline;
+  color: #007bff; /* Blue link color */
+  cursor: pointer;
+}
+
+.reviews-link:hover {
+  text-decoration: none;
+  color: #0056b3; /* Darker blue on hover */
+}
+/* end rating css */
+
 @media (max-width: 768px) {
 .artist-events-grid {
   grid-template-columns: 1fr;

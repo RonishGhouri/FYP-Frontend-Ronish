@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { db } from "../../firebaseConfig"; // Firestore configuration
+import { doc, getDoc } from "firebase/firestore";
 import "./ArtistDashboard.css";
 import ArtistSidebar from "./sidebar/ArtistSidebar";
 import ArtistHeader from "./header/ArtistHeader";
@@ -17,6 +19,16 @@ const ArtistDashboard = () => {
     donations: 24,
     tickets: 16,
   });
+
+  const [artistRating, setArtistRating] = useState({
+    rating: 0,
+    reviews: 0,
+    excellent: 0,
+    average: 0,
+    bad: 0,
+  });
+
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
 
   const [events] = useState([
     {
@@ -40,10 +52,26 @@ const ArtistDashboard = () => {
   ]);
 
   const [recentActivity] = useState([
-    { type: "Booking", message: "Booking confirmed for A Chorus of Beauty and Menace", date: "08 June" },
-    { type: "Payment", message: "Payment received for Crowdfunding", date: "02 June" },
-    { type: "Campaign", message: "Raised $1000 for Ghost Writer Campaign", date: "01 June" },
-    { type: "Upload", message: "New video uploaded: My Journey as an Artist", date: "30 May" },
+    {
+      type: "Booking",
+      message: "Booking confirmed for A Chorus of Beauty and Menace",
+      date: "08 June",
+    },
+    {
+      type: "Payment",
+      message: "Payment received for Crowdfunding",
+      date: "02 June",
+    },
+    {
+      type: "Campaign",
+      message: "Raised $1000 for Ghost Writer Campaign",
+      date: "01 June",
+    },
+    {
+      type: "Upload",
+      message: "New video uploaded: My Journey as an Artist",
+      date: "30 May",
+    },
   ]);
 
   const navigate = useNavigate();
@@ -53,7 +81,11 @@ const ArtistDashboard = () => {
     datasets: [
       {
         label: "Payment Sources",
-        data: [incomeData.crowdfunding, incomeData.donations, incomeData.tickets],
+        data: [
+          incomeData.crowdfunding,
+          incomeData.donations,
+          incomeData.tickets,
+        ],
         backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
         hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
       },
@@ -69,6 +101,63 @@ const ArtistDashboard = () => {
         position: "bottom",
       },
     },
+  };
+
+  useEffect(() => {
+    const fetchArtistRating = async () => {
+      try {
+        const docRef = doc(db, "ratings", "artistIdPlaceholder"); // Replace 'artistIdPlaceholder' with dynamic artist ID
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setArtistRating({
+            rating: data.overallRating || 0,
+            reviews: data.totalReviews || 0,
+            excellent: data.excellent || 0,
+            average: data.average || 0,
+            bad: data.bad || 0,
+          });
+        } else {
+          console.log("No rating data found!");
+        }
+      } catch (error) {
+        console.error("Error fetching artist rating:", error);
+      }
+    };
+
+    fetchArtistRating();
+  }, []);
+
+  const openReviewsModal = () => {
+    setShowReviewsModal(true);
+  };
+
+  const closeReviewsModal = () => {
+    setShowReviewsModal(false);
+  };
+
+  // Helper to generate star rating with filled and hollow stars
+  const generateStars = (rating) => {
+    const filledStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - filledStars - (halfStar ? 1 : 0);
+
+    return (
+      <div className="stars-container">
+        {Array(filledStars)
+          .fill()
+          .map((_, index) => (
+            <span key={`filled-${index}`} className="star filled">★</span>
+          ))}
+        {halfStar && <span className="star half">★</span>}
+        {Array(emptyStars)
+          .fill()
+          .map((_, index) => (
+            <span key={`empty-${index}`} className="star empty">★</span>
+          ))}
+      </div>
+    );
   };
 
   return (
@@ -89,11 +178,15 @@ const ArtistDashboard = () => {
                 <p>Tickets: {incomeData.tickets}%</p>
               </div>
               <div className="artist-rating">
-                <h4>Artist Rating: 4.5/5</h4>
-                <div className="star-rating">
-                  <span>⭐️⭐️⭐️⭐️⭐️</span>
-                </div>
-                <p>Based on 120 reviews</p>
+                <h4>Artist Rating: {artistRating.rating}/5</h4>
+                {generateStars(artistRating.rating)}
+                <p
+                  className="reviews-link"
+                  onClick={openReviewsModal}
+                  style={{ cursor: "pointer", color: "blue" }}
+                >
+                  Based on {artistRating.reviews} reviews
+                </p>
               </div>
             </div>
             <div className="artist-payment-history">
@@ -132,6 +225,21 @@ const ArtistDashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Reviews Modal */}
+      {showReviewsModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Review Breakdown</h3>
+            <p>Excellent: {artistRating.excellent}</p>
+            <p>Average: {artistRating.average}</p>
+            <p>Bad: {artistRating.bad}</p>
+            <button onClick={closeReviewsModal} className="close-button">
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

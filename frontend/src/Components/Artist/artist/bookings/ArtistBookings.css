@@ -25,64 +25,138 @@ body {
   box-sizing: border-box;
 }
 
-.artist-bookings-section {
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+.artist-manage-container {
+  margin: 18px auto;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px 25px;
+  text-align: center;
+  box-sizing: border-box;
 }
 
-.bookings-tabs {
+/* Tabs Styling */
+.Manage-tabs {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  justify-content: flex-start;
   margin-bottom: 20px;
 }
 
-.bookings-tab {
-  padding: 8px 16px;
-  background-color: #f0f0f0;
-  border-radius: 4px;
+.Manage-tab {
+  padding: 8px 15px;
+  background-color: #e0e0e0;
   border: none;
+  border-radius: 15px;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.bookings-tab.active-tab {
-  background-color: #0073e6;
+.Manage-tab.Manage-active-tab {
+  background: #212ea0;
+  color: white;
+  transform: scale(1.05);
+}
+
+.Manage-tab:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+  transform: scale(1.05);
   color: white;
 }
 
-.bookings-list {
+/* Booking List Styling */
+.Manage-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  align-items: stretch;
+  margin-top: 20px;
 }
 
-.bookings-item {
+.empty-message {
+  text-align: center;
+  color: #888;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+/* Booking Item Styling */
+.Manage-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Align items at the top */
+  justify-content: space-between; /* Space out the items */
   padding: 15px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+  transition: box-shadow 0.3s, transform 0.2s ease;
 }
 
-.bookings-date {
+.Manage-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
+
+}
+
+/* Date Styling */
+.Manage-date {
   font-weight: bold;
   color: #e63946;
-  width: 50px;
+  font-size: 14px;
+  margin-right: 15px;
+  text-align: left;
+  flex-shrink: 0;
+  margin-top: 5px;
+  width: 100px; /* Fixed width to keep layout consistent */
 }
 
-.bookings-info {
-  flex-grow: 1;
-  padding-left: 20px;
+/* Booking Details Styling */
+.Manage-details {
+  flex-grow: 1; /* Let this section grow to fill space */
+  text-align: left;
+  margin-left: 20px;
 }
 
-.bookings-time,
-.bookings-name,
-.bookings-location {
-  margin: 0;
+.Manage-heading {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px; /* Space below the heading */
+}
+
+.Manage-details p {
+  margin: 3px 0;
+  color: #555;
+  font-size: 12px;
+}
+
+/* Actions Styling */
+.Manage-actions {
+  margin-left: 20px;
+}
+
+.Manage-actions button {
+  margin-top: 35px;
+  padding: 5px 10px;
+  background: #212ea0;
+  border-radius: 10px;
+  border: transparent;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.Manage-actions button:hover {
+  color: white;
+  text-decoration: none;
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
 }
 
 .bookings-participants {
@@ -96,17 +170,6 @@ body {
   height: 24px;
   border-radius: 50%;
   object-fit: cover;
-}
-
-.bookings-actions {
-  position: relative;
-}
-
-.bookings-actions button {
-  background: none;
-  border: none;
-  color: #0073e6;
-  cursor: pointer;
 }
 
 .bookings-dropdown-menu {

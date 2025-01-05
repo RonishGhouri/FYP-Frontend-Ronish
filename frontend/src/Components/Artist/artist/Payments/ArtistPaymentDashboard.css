@@ -1,0 +1,107 @@
+/* Artist Dashboard Wrapper */
+.artist-dashboard-wrapper {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  height: 100vh;
+  width: 100vw;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Main Content Area */ 
+.artist-paymentdashboard-content {
+  padding: 80px 20px 20px;
+  background-color: #f5f5f5;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent content overflow */
+}
+
+/* Artist Payment Dashboard Wrapper */
+.artist-payment-dashboard-wrapper {
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  height: 100%;
+
+}
+
+/* Tabs Wrapper */
+.artist-payment-tabs-wrapper {
+  position: sticky;
+  /* Fix the tabs at the top of the scrolling container */
+  top: 0;
+  /* Stick to the top of the container */
+  z-index: 5;
+  /* Keep it above other content */
+  background-color: #fff;
+  /* Match the background color of the dashboard */
+  padding-bottom: 10px;
+  /* Ensure spacing between tabs and content */
+  border-bottom: 1px solid #e0e0e0;
+  /* Separator line for visual clarity */
+}
+
+/* Tabs Buttons */
+.artist-payment-tab-buttons {
+  display: flex;
+  gap: 10px;
+  /* Spacing between tabs */
+  margin-bottom: 0;
+  /* Remove bottom margin */
+  padding: 10px 0;
+  /* Padding for spacing */
+}
+
+/* Individual Tab Button */
+.artist-payment-tab-btn {
+  padding: 10px 20px;
+  /* Button padding */
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  /* Font size for text */
+  color: #666;
+  /* Inactive tab color */
+  border-radius: 5px;
+  /* Rounded corners */
+}
+
+/* Active Tab Button */
+.artist-payment-tab-btn.active-tab {
+  background: #007bff;
+  /* Active tab background (Green for earnings) */
+  color: white;
+  /* Active tab text color */
+}
+
+/* Title Header */
+.artist-payment-header {
+  position: sticky;
+  /* Fix the title at the top of the container */
+  top: -20px;
+  /* Stick to the top of the container */
+  z-index: 10;
+  /* Ensure it remains above other content */
+  background-color: #fff;
+  /* Match the dashboard background */
+  padding: 10px 0;
+  /* Spacing around the title */
+  font-size: 24px;
+  /* Font size for the title */
+  font-weight: bold;
+  /* Bold text for emphasis */
+  margin-bottom: 20px;
+  /* Space between title and tabs */
+  border-bottom: 1px solid #e0e0e0;
+  /* Separator line below the title */
+}
+
+/* Payment Content Wrapper */
+.artist-payment-content-wrapper {
+  overflow-y: auto;    /* Allow scrolling if content overflows */
+  height: 78%;   /* Full height */
+  
+}

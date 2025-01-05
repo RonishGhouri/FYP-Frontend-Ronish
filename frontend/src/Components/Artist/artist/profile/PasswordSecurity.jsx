@@ -157,10 +157,6 @@ function PasswordSecurity() {
           Change Password
           <FaChevronRight />
         </button>
-        <button className="security-option" onClick={toggleTwoFactorAuthModal}>
-          Two-Factor Authentication
-          <FaChevronRight />
-        </button>
       </div>
 
       {showChangePasswordModal && (
@@ -265,76 +261,6 @@ function PasswordSecurity() {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {showTwoFactorAuthModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <h3>Two-Factor Authentication</h3>
-            {!isCodeSent ? (
-              <>
-                <div className="form-section">
-                  <label>Phone Number</label>
-                  <input
-                    type="text"
-                    value={phoneNumber || ""}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="form-input"
-                    placeholder="Enter your phone number"
-                  />
-                </div>
-                <div id="recaptcha-container"></div>
-                <div className="form-section">
-                  <button
-                    type="button"
-                    className="save-button"
-                    onClick={() => {
-                      sendVerificationCode();
-                    }}
-                  >
-                    Send Verification Code
-                  </button>
-                  <button
-                    type="button"
-                    className="cancel-button"
-                    onClick={toggleTwoFactorAuthModal}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="form-section">
-                  <label>Verification Code</label>
-                  <input
-                    type="text"
-                    value={verificationCode || ""}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    className="form-input"
-                    placeholder="Enter the code"
-                  />
-                </div>
-                <div className="form-section">
-                  <button
-                    type="button"
-                    className="save-button"
-                    onClick={verifyCode}
-                  >
-                    Verify & Enable 2FA
-                  </button>
-                  <button
-                    type="button"
-                    className="cancel-button"
-                    onClick={toggleTwoFactorAuthModal}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </>
-            )}
           </div>
         </div>
       )}

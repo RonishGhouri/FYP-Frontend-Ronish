@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <p>Loading...</p>; // Optionally add a loader/spinner here
+    return "";
   }
 
   return (
@@ -32,3 +32,5 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Inline style for centering the loader with blurred background

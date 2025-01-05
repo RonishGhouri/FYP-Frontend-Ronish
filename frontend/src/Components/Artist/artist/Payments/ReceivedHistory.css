@@ -1,0 +1,110 @@
+/* Container for received payments history */
+.received-history {
+    padding: 20px;
+}
+
+/* Header section for filters and title */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Dropdown filters for status and date range */
+.filters select {
+    margin-left: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* List of received payments */
+.payments-list {
+    margin-top: 20px;
+}
+
+/* Individual payment card */
+.payment-card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+/* Status labels for payments */
+.status {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 20px;
+    text-transform: capitalize;
+}
+
+/* Successful payment status */
+.status-success {
+    color: white;
+    background-color: #28a745; /* Green for received */
+}
+
+/* Pending payment status */
+.status-pending {
+    color: white;
+    background-color: #ffc107; /* Yellow for pending */
+}
+
+/* Failed payment status */
+.status-failed {
+    color: white;
+    background-color: #dc3545; /* Red for failed */
+}
+
+/* Payment info and details section */
+.payment-info {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Payment details styling */
+.payment-details p {
+    margin: 5px 0;
+}
+
+/* Button to download payment receipt */
+.download-receipt {
+    align-self: flex-start;
+    background: linear-gradient(45deg, #28a745, #218838); /* Green gradient for earnings */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Hover effect for download button */
+.download-receipt:hover {
+    background: linear-gradient(45deg, #218838, #19692c);
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+    .history-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filters {
+        margin-top: 10px;
+    }
+}

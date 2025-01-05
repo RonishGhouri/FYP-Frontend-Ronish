@@ -1,26 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "./ArtistContent.css";
 import ArtistSidebar from "./sidebar/ArtistSidebar";
+import { ThreeDot } from "react-loading-indicators"; // Import the loader
 import ArtistHeader from "./header/ArtistHeader";
 import { FaPlus, FaArrowLeft } from "react-icons/fa";
 import { useAuth } from "../../authContext";
 import { useRef } from "react";
-import {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} from "firebase/storage";
 import { db } from "../../firebaseConfig";
 import {
   collection,
   query,
   where,
-  getDocs,
+  onSnapshot,
   addDoc,
   updateDoc,
   deleteDoc,
   doc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
@@ -48,33 +44,60 @@ const ArtistContent = ({ artistId }) => {
     }
   }, [currentUser]);
 
-  // Fetch content from Firestore for the logged-in artist
-  const fetchArtistContent = async () => {
+  const fetchArtistContent = () => {
     try {
       setLoading(true);
       const q = query(
         collection(db, "artistContent"),
-        where("artistId", "==", currentUser.uid)
+        where("artistId", "==", currentUser.uid),
+        // orderBy("timestamp", "desc") // Order by timestamp descending
       );
-      const querySnapshot = await getDocs(q);
-      const contentList = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setUploadedContent(contentList);
+
+      // Use onSnapshot for real-time updates
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const contentList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setUploadedContent(contentList);
+        setLoading(false);
+      });
+
+      // Cleanup listener on component unmount
+      return () => unsubscribe();
     } catch (error) {
       console.error("Error fetching content:", error);
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleFileSelect = (e) => {
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleFileSelect = async (e) => {
     const file = e.target.files[0];
-    const fileUrl = URL.createObjectURL(file);
-    setPreviewFile(fileUrl);
-    setPreviewFileType(file.type.startsWith("video") ? "video" : "image");
-    setHasInteracted(true);
+    // Restrict file size to 5MB (for example)
+    const maxSizeInBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      alert(
+        "File size exceeds the limit of 5MB. Please select a smaller file."
+      );
+      return;
+    }
+    try {
+      const base64File = await convertToBase64(file);
+      setPreviewFile(base64File);
+      setPreviewFileType(file.type.startsWith("video") ? "video" : "image");
+      setHasInteracted(true);
+    } catch (error) {
+      console.error("Error converting file to Base64:", error);
+    }
   };
 
   const handleDragOver = (e) => {
@@ -87,16 +110,27 @@ const ArtistContent = ({ artistId }) => {
     e.currentTarget.classList.remove("artist-drag-over");
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     e.currentTarget.classList.remove("artist-drag-over");
     const file = e.dataTransfer.files[0];
-    const fileUrl = URL.createObjectURL(file);
-    setPreviewFile(fileUrl);
-    setPreviewFileType(file.type.startsWith("video") ? "video" : "image");
-    setHasInteracted(true);
+    // Restrict file size to 5MB (for example)
+    const maxSizeInBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      alert(
+        "File size exceeds the limit of 5MB. Please select a smaller file."
+      );
+      return;
+    }
+    try {
+      const base64File = await convertToBase64(file);
+      setPreviewFile(base64File);
+      setPreviewFileType(file.type.startsWith("video") ? "video" : "image");
+      setHasInteracted(true);
+    } catch (error) {
+      console.error("Error converting file to Base64:", error);
+    }
   };
-
   const handleOutsideClick = (e) => {
     if (e.target.classList.contains("artist-modal-overlay")) {
       if (hasInteracted) {
@@ -119,19 +153,20 @@ const ArtistContent = ({ artistId }) => {
       const tags = e.target.tags.value;
 
       const newContent = {
-        fileUrl: previewFile,
+        fileUrl: previewFile, // Save Base64 string
         type: previewFileType,
         caption,
         location,
         tags,
         artistId: currentUser.uid,
-        timestamp: new Date(),
+        timestamp: serverTimestamp(), // Use serverTimestamp
       };
 
       const docRef = await addDoc(collection(db, "artistContent"), newContent);
+      // Update local state immediately for a smoother user experience
       setUploadedContent([
-        ...uploadedContent,
         { id: docRef.id, ...newContent },
+        ...uploadedContent,
       ]);
       closeModal();
     } catch (error) {
@@ -139,7 +174,6 @@ const ArtistContent = ({ artistId }) => {
     }
   };
 
-  
   const handleDelete = async () => {
     try {
       await deleteDoc(doc(db, "artistContent", selectedItem.id));
@@ -185,6 +219,14 @@ const ArtistContent = ({ artistId }) => {
         <ArtistHeader />
         <div className="artist-content-section">
           <h3 className="artist-content-header">Manage Content</h3>
+          {/* Loader */}
+          {loading && (
+            <div style={styles.overlay}>
+              <div style={styles.loaderContainer}>
+                <ThreeDot color="#212ea0" size="small" />
+              </div>
+            </div>
+          )}
           <div className="artist-content-grid">
             {uploadedContent.length > 0 ? (
               uploadedContent.map((item, index) => (
@@ -385,4 +427,28 @@ const ArtistContent = ({ artistId }) => {
   );
 };
 
-export default ArtistContent; 
+const styles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Grey transparent background
+    zIndex: 9999, // Ensure the loader appears above everything else
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loaderContainer: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "none",
+    padding: "20px 40px",
+    borderRadius: "8px", // Rounded corners for the popup
+  },
+};
+
+export default ArtistContent;

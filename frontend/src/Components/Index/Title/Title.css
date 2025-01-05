@@ -1,4 +1,4 @@
-.title {
+.title-title {
     text-align: center;
     color: #212EA0;
     font-size: 15px;
@@ -6,7 +6,7 @@
     text-transform: uppercase;
     margin: 70px 0 30px;
 }
-.title h2 {
+.title-title h2 {
     text-align: center;
     font-size: 32px;
     color: #000f38;

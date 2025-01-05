@@ -1,181 +1,187 @@
 .profile-section {
-    width: 80%;
-    margin-left: 70px;
-  }
-  
-  .artist-profile-section {
-    flex: 1;
-    background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    height: 100%;
-    margin-left: 300px;
-    overflow-y: auto;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-  }
-  
-  .profile-picture-wrapper {
-    text-align: center;
-    margin-bottom: 30px;
-  }
+  width: 80%;
+  margin-left: 70px;
+}
 
-  .profile-picture-section {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 20px;
-  }
+.artist-profile-section {
+  flex: 1;
+  background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  margin-left: 300px;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
 
-  .profile-picture-section img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-  }
-  
-  .profile-picture {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #ddd;
-  }
+.profile-picture-wrapper {
+  text-align: center;
+  margin-bottom: 30px;
+}
 
-  .profile-picture-section img {
-    display: block;
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin: 0 auto;
-    cursor: pointer;
-  }
+.profile-picture-section {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
 
-  .profile-picture-section {
-    position: relative;
-  }
+.profile-picture-section img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
 
-  .edit-icon {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    color: #007bff;
-    background: #fff;
-    border-radius: 50%;
-    padding: 5px;
-    font-size: 20px;
-    cursor: pointer;
-  }
-  
-  .edit-icon:hover {
-    color: #0056b3;
-  }
-  
+.profile-picture {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ddd;
+}
 
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  .modal-content {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    width: 400px;
-    max-width: 100%;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
-    transition: all 0.3s ease;
-  }
-  
+.profile-picture-section img {
+  display: block;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto;
+  cursor: pointer;
+}
 
-  @media (max-width: 768px) {
-    .artist-profile-section {
-      margin-left: 220px;
-    }
-  
-    .modal-content {
-      width: 100%;
-      padding: 20px;
-    }
-  }
-  
-  .modal-upload-button {
-    color: #212ea0;
-    background: none;
-    border: none;
-  }
-  
-  .modal-upload-button:hover {
-    background: linear-gradient(135deg, #2980b9, #8e44ad);
-    color: white;
-  }
+.profile-picture-section {
+  position: relative;
+}
 
-  .modal-remove-button {
-    color: red;
-    background: none;
-    border: none;
-  }
-  
-  .modal-remove-button:hover {
-    background: linear-gradient(135deg, #2980b9, #8e44ad);
-    color: white;
-  }
+.edit-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  color: #007bff;
+  background: #fff;
+  border-radius: 50%;
+  padding: 5px;
+  font-size: 20px;
+  cursor: pointer;
+}
 
-  .modal-cancel-button {
-    color: black;
-    background: none;
-    border: none;
-  }
-  
-  .modal-cancel-button:hover {
-    background: linear-gradient(135deg, #2980b9, #8e44ad);
-    color: white;
-  }
-  
-  .file-input {
-    display: none;      
-  }
+.edit-icon:hover {
+  color: #0056b3;
+}
 
-  .form-section {
-    margin-bottom: 20px;
-  }
-  
-  .form-section label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-  
-  .form-section button {
-    background: #212ea0;
-    color: white;
-  }
-  
-  .form-section button:hover {
-    background: linear-gradient(135deg, #2980b9, #8e44ad);
-  }
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
-  .form-input {
-    width: 95%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 15px;
-  }
-  .save-button{
+.modal-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 100%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #eaf4fb, #f7ecf7);
+  transition: all 0.3s ease;
+}
+
+.modal-upload-button {
+  color: #212ea0;
+  background: none;
+  border: none;
+}
+
+.modal-upload-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+  color: white;
+}
+
+.modal-remove-button {
+  color: red;
+  background: none;
+  border: none;
+}
+
+.modal-remove-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+  color: white;
+}
+
+.modal-cancel-button {
+  color: black;
+  background: none;
+  border: none;
+}
+
+.modal-cancel-button:hover {
+  background: linear-gradient(135deg, #2980b9, #8e44ad);
+  color: white;
+}
+
+.file-input {
+  display: none;
+}
+
+/* Updated form-section and form-input styles */
+.form-section {
+  margin-bottom: 15px;
+
+}
+.react-select {
+  margin-bottom: 10px; /* Spacing below the dropdown */
+}
+.form-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.save-changes-button {
+  background-color: #212ea0;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.save-changes-button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
+
+/* Existing save-button style (optional) */
+.save-button {
   background: #212ea0;
   color: white;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
   margin-right: 10px;
+  align-self: flex-start;
+  margin-top: 10px;
+
+}
+
+@media (max-width: 768px) {
+  .artist-profile-section {
+    margin-left: 220px;
+  }
+
+  .modal-content {
+    width: 100%;
+    padding: 20px;
+  }
 }

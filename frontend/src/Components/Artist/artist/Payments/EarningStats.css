@@ -1,0 +1,66 @@
+/* Container for artist earnings stats */
+.artist-earning-stats {
+    padding: 20px;
+}
+
+/* Summary section for artist earnings */
+.artist-stats-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+/* Individual stat card */
+.artist-stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Amount display inside the stat card */
+.artist-amount {
+    font-size: 24px;
+    font-weight: bold;
+    color: #28a745; /* Green color for earnings */
+}
+
+/* Charts container for artist stats */
+.artist-charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Individual chart section for bar and pie charts */
+.artist-chart-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+/* Tooltip styles for chart legends */
+.recharts-tooltip-wrapper {
+    z-index: 10;
+}
+
+/* Legends for pie chart in artist earnings */
+.recharts-legend-item {
+    font-size: 14px;
+}
+
+/* Pie chart color adjustment */
+.recharts-surface {
+    outline: none; /* Removes focus outline */
+}
+
+/* Responsive adjustments for charts */
+@media (max-width: 768px) {
+    .artist-charts-container {
+        grid-template-columns: 1fr; /* Stack charts vertically on smaller screens */
+    }
+}

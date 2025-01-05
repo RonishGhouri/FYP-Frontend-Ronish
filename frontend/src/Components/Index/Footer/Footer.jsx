@@ -6,7 +6,7 @@ import i3 from "../../../assets/fb.jpg";
 
 const Footer = () => {
   return (
-    <div className="footer">
+    <div className="footer-footer">
       <p>@ 2024 Kalakaar </p>
       <ul>
         <li>

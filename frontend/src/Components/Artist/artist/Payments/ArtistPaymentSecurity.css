@@ -1,0 +1,127 @@
+/* Container for artist payment security */
+.artist-payment-security {
+    padding: 20px;
+}
+
+/* Security settings section */
+.artist-security-settings {
+    margin-bottom: 30px;
+}
+
+/* Individual setting card */
+.artist-setting-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Setting header containing icon and info */
+.artist-setting-header {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Icons for settings */
+.artist-setting-icon {
+    font-size: 24px;
+    color: #28a745; /* Green color for payout-related security */
+}
+
+/* Switch toggle styles */
+.artist-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+}
+
+/* Hide the default checkbox */
+.artist-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Switch slider */
+.artist-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 34px;
+}
+
+/* Slider handle */
+.artist-slider:before {
+    position: absolute;
+    content: '';
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+/* When switch is ON */
+.artist-switch input:checked + .artist-slider {
+    background-color: #28a745; /* Green for enabled settings */
+}
+
+/* Move slider handle when ON */
+.artist-switch input:checked + .artist-slider:before {
+    transform: translateX(26px);
+}
+
+/* Activity log section */
+.artist-activity-log {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Log list */
+.artist-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Individual log item */
+.artist-log-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+/* Log icon */
+.artist-log-icon {
+    font-size: 20px;
+    color: #28a745; /* Green for payout activities */
+}
+
+/* Log action text */
+.artist-log-action {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+/* Metadata for logs */
+.artist-log-meta {
+    font-size: 14px;
+    color: #666;
+}

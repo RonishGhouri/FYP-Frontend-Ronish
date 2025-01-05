@@ -1,0 +1,50 @@
+/* Stats Section */
+.stats {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  
+  .stat-block {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .stat-block:hover {
+    background-color: #ecf0f1;
+  }
+  
+  .stat-icon-text {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  
+  .stat-icon {
+    margin-right: 15px;
+    font-size: 2.5rem;
+    color: white;
+    background-color: #3498db;
+    padding: 15px;
+    border-radius: 50%;
+  }
+  
+  .stat-block h3 {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+    font-weight: normal;
+    color: #333;
+  }
+  
+  .stat-block p {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #3498db;
+    margin-left: 85px;
+  }
+  

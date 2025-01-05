@@ -37,7 +37,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
-  width: 100%;
+  width: 95%;
 }
 
 .certification-header {
@@ -67,6 +67,8 @@
   color: #007bff;
   font-size: 1.2em;
 }
+
+
 
 /* Toggle for certificate list visibility */
 .certification-list {

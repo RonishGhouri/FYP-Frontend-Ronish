@@ -1,0 +1,36 @@
+/* Artist Export Calendar Button Styles */
+.artist-export-btn {
+    padding: 10px 20px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex; /* Align icon and text horizontally */
+    align-items: center; /* Vertically center the icon and text */
+    justify-content: center; /* Center both the icon and text */
+}
+
+.artist-export-btn:hover {
+    background-color: #27ae60;
+}
+
+/* Styling for the icon inside the button */
+.artist-export-btn .artist-icon {
+    font-size: 1.2rem; /* Adjust the icon size */
+    margin-right: 10px; /* Add space between the icon and text */
+}
+
+/* Styling for the FontAwesomeIcon inside the button */
+.artist-export-btn svg {
+    margin-right: 8px; /* Adjust margin if the icon still feels too close to the text */
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+    .artist-export-btn {
+        width: 100%; /* Make the button full-width on small screens */
+        margin-top: 15px;
+    }
+}

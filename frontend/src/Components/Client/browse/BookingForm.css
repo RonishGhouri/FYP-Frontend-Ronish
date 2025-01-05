@@ -5,7 +5,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent overlay */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -17,21 +17,86 @@
 .booking-form-modal {
   background: #fff;
   border-radius: 12px;
-  max-width: 520px;
+  max-width: 900px; /* Increased width for two-column layout */
   width: 90%;
-  max-height: 80vh; /* Restrict modal height to 80% of viewport */
+  max-height: 80vh;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
   position: relative;
-  overflow: hidden; /* Ensure the close button is not affected by scrolling */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-/* Scrollable Content Area */
-.booking-form-content {
-  overflow-y: auto; /* Scrollable content */
-  padding: 25px 30px;
-  max-height: calc(80vh - 50px); /* Adjust height to account for the close button */
+/* Flex Container for Two-Column Layout */
+.booking-form-container {
+  display: flex;
+  flex-direction: row;
+  height: calc(80vh - 50px); /* Adjust height for close button */
+}
+
+/* Left Side: Booking Form */
+.booking-form-left {
+  flex: 1;
+  padding: 20px 25px;
+  overflow-y: auto;
+  border-right: 1px solid #f1f1f1; /* Separation line */
+}
+
+/* Right Side: Booking Summary */
+.booking-form-right {
+  flex: 1;
+  padding: 20px 25px;
+  background-color: #f9f9f9; /* Light gray background */
+  display: flex;
+  overflow-y: auto;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Center-align Headings */
+.booking-form-left h2,
+.booking-form-right h3 {
+  text-align: center; /* Center headings */
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Align Artist Name to Left */
+.artist-name {
+  text-align: left; /* Left-aligned text */
+  font-size: 14px;
+  margin-bottom: 10px;
+  font-weight: 500; /* Slightly bold for emphasis */
+  color: #555; /* Slightly darker gray */
+}
+
+/* Left-align Remaining Content */
+.booking-form-left label,
+.booking-form-left input,
+.booking-form-left textarea,
+.booking-form-left select,
+.booking-form-right p {
+  text-align: left; /* Align text to the left */
+  display: block;
+  margin-bottom: 10px;
+}
+.booking-form-left p {
+  text-align: left;
+}
+
+/* Summary Text Styling */
+.booking-form-right p {
+  font-size: 14px;
+  margin: 8px 0;
+  color: #555;
+}
+
+/* Highlight Important Text */
+.booking-form-right strong {
+  font-weight: 600;
+  color: #333;
 }
 
 /* Close Button */
@@ -45,7 +110,7 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  z-index: 10; /* Ensure it stays above all content */
+  z-index: 10;
 }
 
 .modal-close-btn:hover {
@@ -53,28 +118,23 @@
   transform: scale(1.1);
 }
 
-/* Title */
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 22px;
-  color: #333;
-}
-
-/* Form Group */
+/* Form Group Styling */
 .form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column; /* Stack inputs and labels vertically */
+  align-items: flex-start; /* Align content to the left */
+  margin-bottom: 15px;
 }
 
+/* Form Labels */
 .form-group label {
-  display: block;
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   color: #444;
   font-weight: 500;
 }
 
-/* Inputs and Textareas */
+/* Input, Select, and Textarea */
 .form-group input,
 .form-group textarea,
 .form-group select {
@@ -99,10 +159,10 @@ textarea {
   min-height: 80px;
 }
 
-/* Confirm Button */
+/* Confirm Booking Button */
 .confirm-booking-btn {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   background-color: #e63946;
   color: #fff;
   border: none;
@@ -110,6 +170,7 @@ textarea {
   cursor: pointer;
   font-size: 16px;
   font-weight: bold;
+  text-align: center;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
@@ -118,16 +179,93 @@ textarea {
   transform: scale(1.02);
 }
 
-/* Scrollbar Styling (Optional) */
-.booking-form-content::-webkit-scrollbar {
+.confirm-booking-btn:disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
+}
+
+/* Scrollbars for Left and Right Panels */
+.booking-form-left::-webkit-scrollbar,
+.booking-form-right::-webkit-scrollbar {
   width: 8px;
 }
 
-.booking-form-content::-webkit-scrollbar-thumb {
+.booking-form-left::-webkit-scrollbar-thumb,
+.booking-form-right::-webkit-scrollbar-thumb {
   background-color: #ccc;
   border-radius: 4px;
 }
 
-.booking-form-content::-webkit-scrollbar-thumb:hover {
+.booking-form-left::-webkit-scrollbar-thumb:hover,
+.booking-form-right::-webkit-scrollbar-thumb:hover {
   background-color: #aaa;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .booking-form-container {
+    flex-direction: column; /* Stack vertically on smaller screens */
+  }
+
+  .booking-form-left,
+  .booking-form-right {
+    border: none; /* Remove border on small screens */
+  }
+
+  .booking-form-right {
+    background-color: #fff; /* Remove gray background */
+  }
+
+  .confirm-booking-btn {
+    font-size: 14px;
+  }
+}
+
+
+/* Styled Calendar Input */
+.styled-calendar-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #007bff; /* Visible outer border */
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fff;
+  cursor: pointer;
+  box-sizing: border-box; /* Ensure padding does not affect size */
+}
+
+.styled-calendar-input:hover {
+  border-color: #0056b3; /* Change border color on hover */
+}
+
+.styled-calendar-input:focus-within {
+  border-color: #007bff; /* Highlight on focus */
+  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+  outline: none;
+}
+
+/* Calendar Icon Styling */
+.styled-calendar-input .calendar-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #555;
+  cursor: pointer;
+}
+
+/* Input Styling (No Internal Border) */
+.styled-calendar-input input {
+  flex: 1;
+  border: none; /* No internal borders */
+  outline: none; /* Remove default input outline */
+  background: transparent;
+  font-size: 14px;
+  color: #555;
+  padding-right: 35px; /* Ensure spacing for the calendar icon */
 }

@@ -1,0 +1,47 @@
+/* Container to center the spinner */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  background-color: #f9f9f9; /* Light background */
+  position: relative;
+}
+
+/* Shared style for treble clefs */
+.treble {
+  position: absolute;
+  font-size: 80px; /* Adjust size */
+  color: #212ea0; /* Blue for aesthetics */
+  animation: spin 2s linear infinite; /* Rotation animation */
+  transform-origin: center; /* Rotation around the center */
+}
+
+/* Individual positioning for each treble clef */
+.clef1 {
+  animation-delay: 0s;
+  transform: translateX(-80px); /* Shifted to the left */
+}
+
+.clef2 {
+  animation-delay: 0.2s;
+  transform: translateX(0px) translateY(-80px); /* Shifted up */
+}
+
+.clef3 {
+  animation-delay: 0.4s;
+  transform: translateX(80px); /* Shifted to the right */
+}
+
+/* Keyframe animation to rotate around Z-axis */
+@keyframes spin {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}

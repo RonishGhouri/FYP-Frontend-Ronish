@@ -1,0 +1,130 @@
+/* Modal Overlay */
+.artist-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+.artist-modal-main {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 800px;
+  max-height: 80%;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Close Button */
+.artist-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+}
+
+.artist-close-btn:hover {
+  color: #333;
+}
+
+/* Modal Body */
+.artist-event-modal-body {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Left Section */
+.artist-event-details-left {
+  flex: 0 0 60%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.artist-event-details-left h3 {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+/* Artist Info */
+.artist-client-info {
+  display: flex;
+  flex-direction: column;
+  /* Stacks name and phone vertically */
+  margin-bottom: 15px;
+}
+
+.artist-name,
+.artist-phone,
+.artist-event-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px; /* Consistent bottom margin */
+}
+.artist-name .event-icon,
+.artist-phone .event-icon,
+.artist-event-info .event-icon {
+  font-size: 1.5rem;
+  color: black;
+  margin-right: 15px; /* Equal gap between icon and text */
+}
+
+.artist-name span,
+.artist-phone span,
+.artist-event-info span {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Payment Status */
+.artist-payment-status {
+  margin-top: 15px;
+  font-size: 1.2rem;
+  color: #444;
+}
+
+/* Make Payment Button */
+.artist-make-payment-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.artist-make-payment-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+  /* Slightly enlarge on hover */
+}
+
+/* Right Section */
+.artist-event-progress-right {
+  flex: 0 0 35%;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}

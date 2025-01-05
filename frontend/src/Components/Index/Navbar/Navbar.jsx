@@ -20,7 +20,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className={`container ${sticky ? "dark" : ""}`}>
+    <nav className={`container-item ${sticky ? "dark" : ""}`}>
       <RouterLink to="/">
         <img src={logo} alt="logo" className="logo" />
       </RouterLink>
@@ -64,7 +64,7 @@ const Navbar = () => {
           </ScrollLink>
         </li>
         <li className="a">
-          <RouterLink to="/login" className="btn" onClick={() => setmobileMenu(false)}>
+          <RouterLink to="/login" className="btn-btn" onClick={() => setmobileMenu(false)}>
             Sign in
           </RouterLink>
         </li>

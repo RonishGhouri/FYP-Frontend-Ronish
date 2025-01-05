@@ -2,13 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../authContext"; // Use your authentication context
 import { db } from "../../firebaseConfig"; // Firestore configuration
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { ThreeDot } from "react-loading-indicators"; // Import Atom loader
 import "./PersonalDetails.css";
+import { toast } from "react-toastify"; // Import Toastify
+import "react-toastify/dist/ReactToastify.css";
 
 function PersonalDetails() {
   const { currentUser } = useAuth(); // Get the authenticated user
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const [personalDetails, setPersonalDetails] = useState({
     email: "", // This will be automatically set from the authenticated user
@@ -39,7 +41,7 @@ function PersonalDetails() {
         }
       } catch (error) {
         console.error("Error fetching personal details:", error);
-        setError("Failed to fetch personal details. Please try again.");
+        toast.error("Failed to fetch personal details. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -49,37 +51,43 @@ function PersonalDetails() {
   }, [currentUser]);
 
   const handlePersonalDetailsChange = (e) => {
+    const { name, value } = e.target;
+
     setPersonalDetails({
       ...personalDetails,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
   };
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setSuccess(false);
-    setError("");
+    setIsSaving(true); // Start saving loader
 
     try {
       const docRef = doc(db, "users", currentUser.uid);
       await setDoc(docRef, { ...personalDetails }, { merge: true }); // Store personal details in Firestore
-      setSuccess(true);
+      toast.success("Profile updated successfully!");
     } catch (error) {
-      console.error("Error saving personal details:", error);
-      setError("Failed to save personal details. Please try again.");
+      toast.error("Failed to save personal details. Please try again.");
     } finally {
-      setLoading(false);
+      setIsSaving(false); // End saving loader
     }
   };
 
   return (
     <div className="profile-section">
       <h2>Personal Details</h2>
-      {loading && <p>Loading...</p>}
-      {success && <p className="success-message">Personal details updated successfully!</p>}
-      {error && <p className="error-message">{error}</p>}
 
+      {loading && (
+        <div style={styles.overlay}>
+          <div style={styles.loaderContainer}>
+            <ThreeDot
+              color="#212ea0" // Loader color
+              size="small" // Loader size
+            />
+          </div>
+        </div>
+      )}
       <form onSubmit={handleSaveChanges}>
         {/* Email (read-only) */}
         <div className="form-section">
@@ -146,13 +154,37 @@ function PersonalDetails() {
 
         {/* Save Button */}
         <div className="form-section">
-          <button type="submit" className="save-button" disabled={loading}>
-            {loading ? "Saving..." : "Save Changes"}
+          <button type="submit" className="save-button" disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>
     </div>
   );
 }
+
+const styles = {
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Grey transparent background
+    zIndex: 9999, // Ensure the loader appears above everything else
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loaderContainer: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    background: "none",
+    padding: "20px 40px",
+    borderRadius: "8px", // Rounded corners for the popup
+  },
+};
 
 export default PersonalDetails;

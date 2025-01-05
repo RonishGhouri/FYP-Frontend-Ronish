@@ -11,14 +11,13 @@ import {
   FaBell,
   FaCog,
   FaCalendarAlt,
-  FaShieldAlt,
   FaBook,
   FaFolderOpen,
 } from "react-icons/fa";
 import Notifications from "./Notifications";
 import BookingPreferences from "./BookingPreferences";
 import AccountSettings from "./AccountSettings";
-import PrivacySettings from "./PrivacySettings";
+
 import ArtistPortfolio from "./ArtistPortfolio";
 
 const ArtistProfile = ({
@@ -76,8 +75,6 @@ const ArtistProfile = ({
         return <BookingPreferences />;
       case "accountSettings":
         return <AccountSettings />;
-      case "privacySettings":
-        return <PrivacySettings />;
       case "artistPortfolio":
         return <ArtistPortfolio/>;
       default:
@@ -87,7 +84,7 @@ const ArtistProfile = ({
   
 
   return (
-    <div className="artist-profile">
+    <div className="Artist-profile">
       <ArtistSidebar />
       <div className="artist-main-profile">
         <ArtistHeader />
@@ -134,13 +131,6 @@ const ArtistProfile = ({
             >
               <FaCog />
               &nbsp; Account Settings
-            </li>
-            <li
-              onClick={() => handleMenuChange("privacySettings")}
-              className={selectedMenu === "privacySettings" ? "active" : ""}
-            >
-              <FaShieldAlt />
-              &nbsp; Privacy Settings
             </li>
             <li
               onClick={() => handleMenuChange("artistPortfolio")}

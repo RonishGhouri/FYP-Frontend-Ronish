@@ -1,24 +1,35 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaBell, FaSearch } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  onSnapshot,
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "../../firebaseConfig"; // Firestore configuration
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { useAuth } from "../../authContext"; // Authentication context
 import "./ClientHeader.css";
 
 const ClientHeader = () => {
   const { currentUser } = useAuth(); // Get the authenticated user
-  const [username, setUsername] = useState("");
-  const [profilePic, setProfilePic] = useState("");
+  const [username, setUsername] = useState("Guest");
+  const [profilePic, setProfilePic] = useState(
+    "https://via.placeholder.com/40"
+  );
   const [greeting, setGreeting] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const dropdownRef = useRef(null); // Reference for the notification dropdown
   const bellIconRef = useRef(null); // Reference for the bell icon
-  const [showProfileInformation, setShowProfileInformation] = useState(false);
   const navigate = useNavigate();
 
+  // Set greeting based on time
   useEffect(() => {
     const getPakistaniTime = () => {
       const currentDate = new Date();
@@ -45,7 +56,11 @@ const ClientHeader = () => {
 
     // Fetch profile data from Firestore
     const fetchProfile = async () => {
-      if (!currentUser) return;
+      if (!currentUser || !currentUser.uid) {
+        setUsername("Guest");
+        setProfilePic("https://via.placeholder.com/40");
+        return;
+      }
 
       try {
         const docRef = doc(db, "users", currentUser.uid);
@@ -53,101 +68,112 @@ const ClientHeader = () => {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setUsername(data.username || "");
+          setUsername(data.name || "Guest");
           setProfilePic(
             data.profilePicture || "https://via.placeholder.com/40"
           );
         } else {
-          console.log("No profile data found!");
+          setUsername("Guest");
+          setProfilePic("https://via.placeholder.com/40");
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
+        setUsername("Guest");
+        setProfilePic("https://via.placeholder.com/40");
       }
     };
 
-    // Fetch notifications from Firestore
-    const fetchNotifications = async () => {
+    // Fetch notifications in real-time
+    const fetchNotifications = () => {
       if (!currentUser) return;
 
-      try {
-        const docRef = doc(db, "notifications", currentUser.uid);
-        const docSnap = await getDoc(docRef);
+      const notificationsQuery = query(
+        collection(db, "notifications"),
+        where("recipientId", "==", currentUser.uid)
+      );
 
-        if (docSnap.exists()) {
-          setNotifications(docSnap.data().notifications || []);
-        } else {
-          console.log("No notifications found!");
-        }
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      }
+      const unsubscribe = onSnapshot(notificationsQuery, (snapshot) => {
+        const fetchedNotifications = snapshot.docs
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }))
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        setNotifications(fetchedNotifications);
+      });
+
+      return unsubscribe;
     };
 
     fetchProfile();
-    fetchNotifications();
+    const unsubscribeNotifications = fetchNotifications();
+
+    return () => {
+      if (unsubscribeNotifications) unsubscribeNotifications();
+    };
   }, [currentUser]);
 
+  // Toggle Notifications Dropdown
   const toggleNotifications = () => {
-    setShowNotifications((prev) => !prev); // Toggles open/close
+    setShowNotifications((prev) => !prev);
   };
 
+  // Mark All Notifications as Read
   const markAllAsRead = async () => {
-    const updatedNotifications = notifications.map((notification) => ({
-      ...notification,
-      isUnread: false,
-    }));
-
-    setNotifications(updatedNotifications);
-
-    // Update notifications in Firestore
     try {
-      const docRef = doc(db, "notifications", currentUser.uid);
-      await updateDoc(docRef, { notifications: updatedNotifications });
+      const updatedNotifications = notifications.map((notification) => ({
+        ...notification,
+        isRead: true,
+      }));
+
+      setNotifications(updatedNotifications);
+
+      for (const notification of notifications) {
+        const docRef = doc(db, "notifications", notification.id);
+        await updateDoc(docRef, { isRead: true });
+      }
+
+      setShowNotifications(false); // Close dropdown after marking all as read
     } catch (error) {
       console.error("Error marking notifications as read:", error);
     }
   };
 
+  // Handle Notification Click
   const handleNotificationClick = async (notification) => {
-    const updatedNotifications = notifications.map((notif) =>
-      notif.id === notification.id ? { ...notif, isUnread: false } : notif
-    );
-
-    setNotifications(updatedNotifications);
-
-    // Update notifications in Firestore
     try {
-      const docRef = doc(db, "notifications", currentUser.uid);
-      await updateDoc(docRef, { notifications: updatedNotifications });
+      const notificationRef = doc(db, "notifications", notification.id);
+      await updateDoc(notificationRef, { isRead: true });
+
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
+      );
+
+      if (notification.bookingId) {
+        navigate("/client/bookings", {
+          state: { bookingId: notification.bookingId },
+        });
+      } else {
+        switch (notification.type) {
+          case "chat":
+            navigate("/client/chats");
+            break;
+          case "payment":
+            navigate("/client/payment");
+            break;
+          default:
+            break;
+        }
+      }
     } catch (error) {
-      console.error("Error updating notifications:", error);
+      console.error("Error updating notification as read:", error);
+    } finally {
+      setShowNotifications(false);
     }
-
-    switch (notification.type) {
-      case "chat":
-        navigate("/artist/chats");
-        break;
-      case "event":
-        navigate("/artist/bookings");
-        break;
-      case "payment":
-        navigate("/artist/payment");
-        break;
-      case "content":
-        navigate("/artist/content");
-        break;
-      default:
-        break;
-    }
-    setShowNotifications(false);
   };
 
-  const handleBellAndDotClick = (e) => {
-    e.stopPropagation(); // Prevent event propagation to the document
-    toggleNotifications();
-  };
-
-  // Close dropdown if clicked outside
+  // Handle outside clicks for closing dropdown
   const handleClickOutside = (event) => {
     if (
       dropdownRef.current &&
@@ -156,6 +182,33 @@ const ClientHeader = () => {
       !bellIconRef.current.contains(event.target)
     ) {
       setShowNotifications(false);
+    }
+  };
+
+  const deleteAllNotifications = async () => {
+    try {
+      const notificationsQuery = query(
+        collection(db, "notifications"),
+        where("recipientId", "==", currentUser.uid)
+      );
+      const snapshot = await getDocs(notificationsQuery);
+      for (const doc of snapshot.docs) {
+        await deleteDoc(doc.ref);
+      }
+      setNotifications([]);
+      setShowNotifications(false); // Close dropdown after deleting all notifications
+    } catch (error) {
+      console.error("Error deleting all notifications:", error);
+    }
+  };
+
+  const deleteNotification = async (id) => {
+    try {
+      await deleteDoc(doc(db, "notifications", id));
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      // Keep dropdown visible after deleting a single notification
+    } catch (error) {
+      console.error("Error deleting notification:", error);
     }
   };
 
@@ -172,39 +225,33 @@ const ClientHeader = () => {
   }, [showNotifications]);
 
   const unreadNotificationsCount = notifications.filter(
-    (n) => n.isUnread
+    (n) => !n.isRead
   ).length;
 
-  
   return (
-    <header className="artist-dashboard-header">
-      <div className="artist-greeting">
-        <img
-          src={profilePic}
-          alt="Profile"
-          className="artist-profile-pic"
-          
-        />
+    <header className="client-dashboard-header">
+      <div className="client-greeting">
+        <img src={profilePic} alt="Profile" className="client-profile-pic" />
         <h3>
           {greeting}, {username}
         </h3>
       </div>
-      <div className="artist-top-right">
-        <div className="artist-search-bar-container">
-          <FaSearch className="artist-search-icon" />
+      <div className="client-top-right">
+        <div className="client-search-bar-container">
+          <FaSearch className="client-search-icon" />
           <input
             type="text"
             placeholder="Search for anything..."
-            className="artist-search-bar"
+            className="client-search-bar"
             readOnly
           />
         </div>
 
-        {/* Notification Bell and Red Dot */}
+        {/* Notification Bell */}
         <div
-          className="artist-notification-icon"
-          onClick={handleBellAndDotClick}
-          ref={bellIconRef} // Ref for the bell icon
+          className="client-notification-icon"
+          onClick={toggleNotifications}
+          ref={bellIconRef}
         >
           <FaBell size={24} />
           {unreadNotificationsCount > 0 && (
@@ -220,15 +267,24 @@ const ClientHeader = () => {
             <div className="notifications-header">
               <h4>Notifications</h4>
               <button onClick={markAllAsRead}>Mark all as read</button>
+              <button onClick={deleteAllNotifications}>Delete All</button>
             </div>
             <ul className="notifications-list">
-              {notifications.map((notification, index) => (
+              {notifications.map((notification) => (
                 <li
-                  key={index}
-                  className={notification.isUnread ? "unread" : ""}
-                  onClick={() => handleNotificationClick(notification)}
+                  key={notification.id}
+                  className={notification.isRead ? "" : "unread"}
                 >
                   {notification.message}
+                  <button
+                    className="delete-notification"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent parent click event
+                      deleteNotification(notification.id);
+                    }}
+                  >
+                    X
+                  </button>
                 </li>
               ))}
             </ul>

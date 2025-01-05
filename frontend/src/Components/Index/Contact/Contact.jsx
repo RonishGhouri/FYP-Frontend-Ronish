@@ -1,13 +1,12 @@
-import React from 'react'
-import './Contact.css'
-import image from '../../../assets/msg-icon.png'
-import mail from '../../../assets/mail-icon.png'
-import phone from '../../../assets/phone-icon.png'
-import address from '../../../assets/location-icon.png'
-import white from '../../../assets/white-arrow.png'
+import React from 'react';
+import './Contact.css';
+import image from '../../../assets/msg-icon.png';
+import mail from '../../../assets/mail-icon.png';
+import phone from '../../../assets/phone-icon.png';
+import address from '../../../assets/location-icon.png';
+import white from '../../../assets/white-arrow.png';
 
 const Contact = () => {
-
   const [result, setResult] = React.useState("");
 
   const onSubmit = async (event) => {
@@ -34,31 +33,42 @@ const Contact = () => {
   };
 
   return (
-    <div className='contact'>
-        <div className='contact-col'>
-            <h3>Send us a message <img src={image}/></h3>
-            <p>If you have any query regarding Kalakaar, you can message us. Please give your working so that we can answer you. you will be answered in 48 hours</p>
-            <ul>
-                <li> <img src={mail} /> kalakaar2024@gmail.com</li>
-                <li> <img src={phone} /> 0310-4703376</li>
-                <li> <img src={address} /> 
-                Lahore Cantt, Pakistan</li>
-            </ul>
-        </div>
-        <div className="contact-col">
-          <form onSubmit={onSubmit}>
-             <label>Your name</label>
-             <input type="text" name='name' placeholder='Enter your name' required/>
-             <label>Email address</label>
-             <input type="tel" name='phone' placeholder='Enter your email' required/>
-             <label>Write your message here</label>
-             <textarea name="message" rows='6' placeholder='Enter your message' required></textarea>
-             <button className='btn'>Submit now <img src={white}/></button>
-          </form>
-          <span>{result}</span>
-        </div>
+    <div className='contact-container'>
+      <div className='contact-column'>
+        <h3>
+          Send us a message <img src={image} alt="Message Icon" />
+        </h3>
+        <p>
+          If you have any query regarding Kalakaar, you can message us. Please give your working so that we can answer you. you will be answered in 48 hours
+        </p>
+        <ul>
+          <li>
+            <img src={mail} alt="Email Icon" /> kalakaar2024@gmail.com
+          </li>
+          <li>
+            <img src={phone} alt="Phone Icon" /> 0310-4703376
+          </li>
+          <li>
+            <img src={address} alt="Location Icon" /> Lahore Cantt, Pakistan
+          </li>
+        </ul>
+      </div>
+      <div className="contact-column">
+        <form onSubmit={onSubmit}>
+          <label>Your name</label>
+          <input type="text" name='name' placeholder='Enter your name' required />
+          <label>Email address</label>
+          <input type="tel" name='phone' placeholder='Enter your email' required />
+          <label>Write your message here</label>
+          <textarea name="message" rows='6' placeholder='Enter your message' required></textarea>
+          <button className='contact-button'>
+            Submit now <img src={white} alt="Arrow Icon" />
+          </button>
+        </form>
+        <span>{result}</span>
+      </div>
     </div>
-  )
-}
+  );
+};
 
-export default Contact
+export default Contact;
