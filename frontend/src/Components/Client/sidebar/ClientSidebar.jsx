@@ -50,7 +50,7 @@ const ClientSidebar = () => {
         </li>
         <li>
           <RouterLink to="/client/events">
-            <FaCalendarAlt className="client-sidebar-icon" /> Events & Invitations
+            <FaCalendarAlt className="client-sidebar-icon" />Events
           </RouterLink>
         </li>
         <li>

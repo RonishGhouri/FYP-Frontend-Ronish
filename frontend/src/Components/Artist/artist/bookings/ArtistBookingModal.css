@@ -81,7 +81,13 @@
     color: white;
   }
   
-  
+  .modal-actions input{
+    width: 350px;
+    height: 45px;
+    border-radius: 10px;
+    border: 2px solid black;
+    padding-left: 20px;
+  }
   .Modal-actions button:active {
     transform: translateY(1px);
   }

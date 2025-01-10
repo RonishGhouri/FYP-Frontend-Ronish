@@ -10,27 +10,29 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  
 }
 
 /* Modal Content */
 .artist-modal-main {
   background-color: white;
   padding: 20px;
-  border-radius: 8px;
-  width: 800px;
-  max-height: 80%;
+  border-radius: 10px;
+  width: 850px;
+  max-height: 90%;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
+  
 }
 
 /* Close Button */
 .artist-close-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 15px;
+  right: 15px;
   background: transparent;
   border: none;
   font-size: 1.5rem;
@@ -39,7 +41,9 @@
 }
 
 .artist-close-btn:hover {
-  color: #333;
+  color: #444;
+  transform: scale(1.2);
+  transition: all 0.3s ease;
 }
 
 /* Modal Body */
@@ -47,66 +51,77 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
+  gap: 20px; /* Adds spacing between left and right sections */
 }
 
 /* Left Section */
 .artist-event-details-left {
-  flex: 0 0 60%;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  background-color: #f9f9f9;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
 }
 
 .artist-event-details-left h3 {
-  margin-bottom: 15px;
-  font-size: 1.5rem;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
   color: #333;
+  font-weight: bold;
 }
 
 /* Artist Info */
 .artist-client-info {
-  display: flex;
-  flex-direction: column;
-  /* Stacks name and phone vertically */
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .artist-name,
-.artist-phone,
 .artist-event-info {
   display: flex;
   align-items: center;
-  margin-bottom: 15px; /* Consistent bottom margin */
+  margin-bottom: 15px;
 }
+
 .artist-name .event-icon,
-.artist-phone .event-icon,
 .artist-event-info .event-icon {
   font-size: 1.5rem;
-  color: black;
-  margin-right: 15px; /* Equal gap between icon and text */
+  color: #007bff;
+  margin-right: 10px;
 }
 
 .artist-name span,
-.artist-phone span,
 .artist-event-info span {
   font-size: 1rem;
+  color: #444;
+  font-weight: 500;
+}
+
+/* Event Info Styling */
+.artist-event-info span {
+  font-size: 1.1rem;
   color: #333;
 }
 
 /* Payment Status */
 .artist-payment-status {
-  margin-top: 15px;
+  margin-top: 20px;
   font-size: 1.2rem;
   color: #444;
+  font-weight: 500;
+}
+
+.artist-payment-status span {
+  display: block;
+  margin-bottom: 5px;
 }
 
 /* Make Payment Button */
 .artist-make-payment-btn {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
-  padding: 10px 20px;
+  padding: 10px 25px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
@@ -118,13 +133,22 @@
 .artist-make-payment-btn:hover {
   background-color: #45a049;
   transform: scale(1.05);
-  /* Slightly enlarge on hover */
 }
 
 /* Right Section */
 .artist-event-progress-right {
-  flex: 0 0 35%;
+  flex: 0 0 40%;
+  background-color: #f9f9f9;
   padding: 20px;
+  border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+}
+
+/* Utility Classes */
+.text-bold {
+  font-weight: bold;
+}
+
+.text-blue {
+  color: #007bff;
 }

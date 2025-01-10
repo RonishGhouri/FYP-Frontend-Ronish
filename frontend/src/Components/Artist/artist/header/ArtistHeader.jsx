@@ -14,6 +14,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { useAuth } from "../../../authContext"; // Authentication context
+import ArtistEventModal from "../../artist/ArtistEvent/ArtistEventModal"; // Import the modal component
 import "./ArtistHeader.css";
 
 const ArtistHeader = () => {
@@ -25,6 +26,8 @@ const ArtistHeader = () => {
   const [greeting, setGreeting] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null); // Selected event for modal
+  const [showEventModal, setShowEventModal] = useState(false); // Modal visibility
   const dropdownRef = useRef(null); // Reference for the notification dropdown
   const bellIconRef = useRef(null); // Reference for the bell icon
   const navigate = useNavigate();
@@ -139,27 +142,21 @@ const ArtistHeader = () => {
 
   const handleNotificationClick = async (notification) => {
     try {
-      const notificationRef = doc(db, "notifications", notification.id);
-      await updateDoc(notificationRef, { isRead: true });
+      if (!notification) return;
 
-      if (notification.bookingId) {
-        navigate("/artist/bookings", {
-          state: { bookingId: notification.bookingId },
+      const docRef = doc(db, "notifications", notification.id);
+      await updateDoc(docRef, { isRead: true });
+
+      if (notification.type === "event") {
+        navigate("/artist/events", {
+          state: { eventId: notification.eventId },
         });
+      } else if (notification.type === "chat") {
+        navigate("/artist/chats", { state: { chatId: notification.chatId } });
+      } else if (notification.type === "payment") {
+        navigate("/artist/payment");
       } else {
-        switch (notification.type) {
-          case "chat":
-            navigate("/artist/chats");
-            break;
-          case "payment":
-            navigate("/artist/payment");
-            break;
-          case "content":
-            navigate("/artist/content");
-            break;
-          default:
-            break;
-        }
+        alert("This notification does not have a specific redirect.");
       }
     } catch (error) {
       console.error("Error handling notification click:", error);
@@ -266,6 +263,7 @@ const ArtistHeader = () => {
                 <li
                   key={notification.id}
                   className={notification.isRead ? "" : "unread"}
+                  onClick={() => handleNotificationClick(notification)} // Wrap the function call in an arrow function
                 >
                   {notification.message}
                   <button
@@ -283,6 +281,14 @@ const ArtistHeader = () => {
           </div>
         )}
       </div>
+
+      {/* Event Modal */}
+      {showEventModal && selectedEvent && (
+        <ArtistEventModal
+          event={selectedEvent}
+          onClose={() => setShowEventModal(false)} // Close modal
+        />
+      )}
     </header>
   );
 };

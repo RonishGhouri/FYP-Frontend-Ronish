@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { sendPasswordResetEmail } from 'firebase/auth';
+import { auth } from '../../firebaseConfig'; // Import Firebase auth instance
 import Navbar from '../AuthNavbar/AuthNavbar';
 import './PasswordReset.css';
 
@@ -9,20 +10,6 @@ const PasswordReset = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [csrfToken, setCsrfToken] = useState('');
-
-  // Fetch CSRF token when the component is mounted
-  useEffect(() => {
-    const getCsrfToken = async () => {
-      try {
-        const response = await axios.get('/api/accounts/csrf-token/');
-        setCsrfToken(response.data.csrfToken); // Assuming your backend sends the CSRF token in this format
-      } catch (err) {
-        console.error('Error fetching CSRF token:', err);
-      }
-    };
-    getCsrfToken();
-  }, []);
 
   // Function to validate email format
   const validateEmail = (email) => {
@@ -44,32 +31,25 @@ const PasswordReset = () => {
       return;
     }
 
-    // API Call to Django Backend (Password Reset Request)
+    // Firebase Password Reset Email
     try {
-      const response = await axios.post(
-        '/api/accounts/password_reset/',
-        { email },
-        {
-          headers: {
-            'X-CSRFToken': csrfToken, // Include CSRF token in the headers
-          },
-        }
-      );
+      await sendPasswordResetEmail(auth, email);
       setMessage('A password reset link has been sent to your email.');
-      setLoading(false);
     } catch (err) {
-      // Log the full error response for debugging purposes
-      console.error('Error during password reset request:', err.response);
+      console.error('Error sending password reset email:', err);
 
-      // Improved error handling with detailed messages from the backend
-      if (err.response && err.response.data) {
-        // If backend provides specific error messages
-        setError(err.response.data.error || 'An error occurred while sending the reset link.');
-      } else {
-        // Fallback error message for unexpected issues
-        setError('An unexpected error occurred. Please try again.');
+      // Firebase error handling
+      switch (err.code) {
+        case 'auth/user-not-found':
+          setError('No account found with this email.');
+          break;
+        case 'auth/invalid-email':
+          setError('Invalid email format.');
+          break;
+        default:
+          setError('An unexpected error occurred. Please try again.');
       }
-      
+    } finally {
       setLoading(false);
     }
   };
@@ -83,7 +63,7 @@ const PasswordReset = () => {
         {message && <p className="success-msg">{message}</p>}
         {/* Display error message */}
         {error && <p className="error-msg">{error}</p>}
-        
+
         {/* Form for password reset */}
         <form onSubmit={handleSubmit}>
           <input

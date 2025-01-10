@@ -21,7 +21,11 @@ const Login = () => {
 
     try {
       // Sign in with Firebase Authentication
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const user = userCredential.user;
 
       // Fetch the user's role from Firestore
@@ -109,6 +113,9 @@ const Login = () => {
             {loading ? "Logging in..." : "Log In"}
           </button>
         </form>
+        forgot password?<Link to="/password-reset" className="auth-link">
+          send reset link 
+        </Link>
 
         <p className="auth-footer">
           Don't have an account?{" "}

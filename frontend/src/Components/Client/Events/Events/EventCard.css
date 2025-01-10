@@ -20,7 +20,6 @@
   position: absolute;
   top: 60px; /* Adjust to align with the title */
   right: 10px; /* Stick to the right side */
-  background-color: #f39c12;
   color: white;
   padding: 5px 10px;
   border-radius: 5px;
@@ -28,12 +27,8 @@
   font-size: 0.9rem;
 }
 
-.booking-status.pending {
+.booking-status.not-completed {
   background-color: #f39c12; /* Yellow for pending status */
-}
-
-.booking-status.confirmed {
-  background-color: #2ecc71; /* Green for confirmed status */
 }
 
 .booking-status.completed {
@@ -129,7 +124,8 @@
 }
 
 .artist-info span {
-  font-size: 1rem;.event-card {
+  font-size: 1rem;
+  .event-card {
     background-color: white;
     padding: 15px;
     border-radius: 10px;
@@ -138,12 +134,12 @@
     margin-bottom: 20px;
     position: relative;
   }
-  
+
   .event-header h3 {
     font-size: 1.25rem;
     margin-bottom: 10px;
   }
-  
+
   /* Menu Icon */
   .menu-icon {
     position: absolute;
@@ -152,32 +148,31 @@
     font-size: 1.5rem;
     cursor: pointer;
   }
-  
+
   /* Divider */
   .divider {
     margin-top: 10px;
     margin-bottom: 10px;
     border-top: 1px solid #ccc;
   }
-  
-  
+
   /* Event Info */
   .artist-info,
   .event-details {
     margin-top: 10px;
   }
-  
+
   .event-info {
     display: flex;
     align-items: center;
     margin-bottom: 5px;
   }
-  
+
   .event-icon {
     margin-right: 8px;
     color: #3498db;
   }
-  
+
   /* Cancel Popup */
   .cancel-popup {
     position: fixed;
@@ -190,7 +185,7 @@
     justify-content: center;
     align-items: center;
   }
-  
+
   .cancel-popup-content {
     background: white;
     padding: 20px;
@@ -198,7 +193,7 @@
     text-align: center;
     width: 300px;
   }
-  
+
   textarea {
     width: 100%;
     margin-top: 10px;
@@ -206,6 +201,6 @@
     border: 1px solid #ccc;
     border-radius: 5px;
   }
-  
+
   color: #555;
 }

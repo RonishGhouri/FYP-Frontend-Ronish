@@ -19,9 +19,7 @@ import "./ClientHeader.css";
 const ClientHeader = () => {
   const { currentUser } = useAuth(); // Get the authenticated user
   const [username, setUsername] = useState("Guest");
-  const [profilePic, setProfilePic] = useState(
-    "https://via.placeholder.com/40"
-  );
+  const [profilePic, setProfilePic] = useState("https://via.placeholder.com/40");
   const [greeting, setGreeting] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -41,7 +39,7 @@ const ClientHeader = () => {
       const timeInPakistan = new Intl.DateTimeFormat("en-US", options).format(
         currentDate
       );
-      return parseInt(timeInPakistan);
+      return parseInt(timeInPakistan, 10);
     };
 
     const currentHour = getPakistaniTime();
@@ -69,17 +67,13 @@ const ClientHeader = () => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           setUsername(data.name || "Guest");
-          setProfilePic(
-            data.profilePicture || "https://via.placeholder.com/40"
-          );
+          setProfilePic(data.profilePicture || "https://via.placeholder.com/40");
         } else {
           setUsername("Guest");
           setProfilePic("https://via.placeholder.com/40");
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
-        setUsername("Guest");
-        setProfilePic("https://via.placeholder.com/40");
       }
     };
 
@@ -150,19 +144,17 @@ const ClientHeader = () => {
         prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
       );
 
-      if (notification.bookingId) {
-        navigate("/client/bookings", {
-          state: { bookingId: notification.bookingId },
-        });
+      if (notification.chatId) {
+        navigate("/client/chats", { state: { chatId: notification.chatId } });
+      } else if (notification.bookingId) {
+        navigate("/client/bookings", { state: { bookingId: notification.bookingId } });
       } else {
         switch (notification.type) {
-          case "chat":
-            navigate("/client/chats");
-            break;
           case "payment":
             navigate("/client/payment");
             break;
           default:
+            console.warn("Unknown notification type:", notification.type);
             break;
         }
       }
@@ -206,7 +198,6 @@ const ClientHeader = () => {
     try {
       await deleteDoc(doc(db, "notifications", id));
       setNotifications((prev) => prev.filter((n) => n.id !== id));
-      // Keep dropdown visible after deleting a single notification
     } catch (error) {
       console.error("Error deleting notification:", error);
     }
@@ -274,6 +265,7 @@ const ClientHeader = () => {
                 <li
                   key={notification.id}
                   className={notification.isRead ? "" : "unread"}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                   {notification.message}
                   <button

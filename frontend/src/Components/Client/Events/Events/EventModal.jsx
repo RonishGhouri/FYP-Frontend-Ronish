@@ -8,7 +8,7 @@ import {
   faTimes,
   faInfoCircle,
   faCheckCircle,
-  faExclamationCircle
+  faExclamationCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import EventProgress from "./EventProgress"; // Import EventProgress
 import "./EventModal.css";
@@ -56,46 +56,60 @@ const EventModal = ({ event, onClose, onMakePayment }) => {
         <div className="event-modal-body">
           {/* Left Section (Event Details, Artist, and Payment Info) */}
           <div className="event-details-left">
-            <h3>{event.title}</h3>
+            <h3>{event.eventType || "Unknown Event Type"}</h3>
 
             {/* Artist Info */}
             <div className="artist-info event-info">
               <FontAwesomeIcon icon={faUser} className="event-icon" />
-              <span>{event.bookedArtists.join(", ")}</span>
+              <span>{event.artistName || "No artist assigned"}</span>
             </div>
 
             {/* Artist Confirmation Status */}
             <div className="artist-confirmation event-info">
-              {event.bookingStatus === "Confirmed" ? (
-                <FontAwesomeIcon icon={faCheckCircle} className="event-icon confirmed" />
+              {event.bookingStatus === "Completed" ? (
+                <FontAwesomeIcon
+                  icon={faCheckCircle}
+                  className="event-icon confirmed"
+                />
               ) : (
-                <FontAwesomeIcon icon={faExclamationCircle} className="event-icon pending" />
+                <FontAwesomeIcon
+                  icon={faExclamationCircle}
+                  className="event-icon pending"
+                />
               )}
-              <span>{`Artist Confirmation: ${event.bookingStatus}`}</span>
+              <span className="confirm">{`Artist Confirmation: ${
+                event.bookingStatus ? "Done" : "Not Done"
+              }`}</span>
             </div>
 
             {/* Event Info */}
             <div className="event-info">
               <FontAwesomeIcon icon={faCalendarDay} className="event-icon" />
-              <span>Date: {event.date}</span>
+              <span>Date: {event.date || "Date not available"}</span>
             </div>
             <div className="event-info">
               <FontAwesomeIcon icon={faClock} className="event-icon" />
-              <span>Time: {event.time}</span>
+              <span>Time: {event.time || "Time not available"}</span>
             </div>
             <div className="event-info">
               <FontAwesomeIcon icon={faMapMarkerAlt} className="event-icon" />
-              <span>Venue: {event.venue}</span>
+              <span>Venue: {event.venue || "Venue not available"}</span>
             </div>
             <div className="event-info">
               <FontAwesomeIcon icon={faInfoCircle} className="event-icon" />
-              <span>Description: {event.description}</span>
+              <span>
+                Description: {event.description || "No description provided"}
+              </span>
             </div>
 
             {/* Payment Status */}
-            <div className="payment-status event-info">
-              <span>{`Payment: ${event.paymentStatus}`}</span>
+            <div className="event-info">
+              Payment:
+              <span className="payment-status">{` ${
+                event.bookingStatus ? "Done" : "Not Done"
+              }`}</span>
             </div>
+            <span>Payment will send after event completion</span>
 
             {/* Conditionally render the Make Payment button */}
             {event.bookingStatus === "Confirmed" &&
@@ -109,6 +123,7 @@ const EventModal = ({ event, onClose, onMakePayment }) => {
           {/* Right Section: Event Progress */}
           <div className="event-progress-right">
             <EventProgress
+              eventId={event.id} // Pass the eventId to EventProgress
               currentStage={currentStage}
               lastUpdated={lastUpdated}
             />

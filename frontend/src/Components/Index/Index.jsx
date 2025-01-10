@@ -21,9 +21,9 @@ import RequireAuth from "../AuthenticationPages/RequireAuth";
 import ArtistDashboard from "../Artist/artist/ArtistDashboard.jsx";
 import ArtistProfile from "../Artist/artist/profile/ArtistProfile.jsx";
 import ArtistBookings from "../Artist/artist/bookings/ArtistBookings.jsx";
-import ArtistEvents from "../Artist/artist/ArtistEvents";
+import ArtistEvents from "../Artist/artist/ArtistEvent/ArtistEvents.jsx";
 import ArtistContent from "../Artist/artist/ArtistContent";
-import ArtistPayment from "../Artist/artist/ArtistPayment";
+import ArtistPaymentDashboard from "../Artist/artist/ArtistPayments/ArtistPaymentDashboard.jsx"
 import ArtistChat from "../Artist/artist/ArtistChat";
 import ClientChat from "../Client/ClientChat.jsx";
 import ClientBrowserArtist from "../Client/browse/ClientBrowserArtist.jsx";
@@ -124,7 +124,7 @@ function Index() {
           path="/artist/payment"
           element={
             <RequireAuth>
-              <ArtistPayment />
+              <ArtistPaymentDashboard/>
             </RequireAuth>
           }
         />

@@ -313,7 +313,7 @@ function ProfileInformation() {
 
         {/* Bio */}
         <div className="form-section">
-          <label>Bio</label>
+          <label>Artist Bio</label>
           <textarea
             name="bio"
             value={profileData.bio}

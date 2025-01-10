@@ -4,46 +4,47 @@ import {
   faCalendarDay,
   faClock,
   faMapMarkerAlt,
-  faUser,
   faEllipsisV,
   faBan,
   faComments,
 } from "@fortawesome/free-solid-svg-icons";
+import { db } from "../../../firebaseConfig";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import EventModal from "./EventModal";
+import CancelReasonPopup from "./CancelReasonPopup"; // Import the separated component
 import "./EventCard.css";
-import PaymentPopup from "../../Bookings/PaymentPopup";
 
 const EventCard = ({ event }) => {
   const [showModal, setShowModal] = useState(false);
   const [showActionsMenu, setShowActionsMenu] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
   const [showCancelPopup, setShowCancelPopup] = useState(false);
-  const [showPaymentPopup, setShowPaymentPopup] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
 
   const menuRef = useRef(null);
   const dropdownRef = useRef(null);
 
+  // Close the modal
   const handleCloseModal = () => setShowModal(false);
 
-  const handleToggleActionsMenu = () => {
-    setShowActionsMenu(!showActionsMenu);
+  // Toggle the actions dropdown menu
+  const handleToggleActionsMenu = (e) => {
+    e.stopPropagation();
+    setShowActionsMenu((prev) => !prev);
   };
 
+  // Handle cancel event logic
   const handleCancel = () => {
     setShowActionsMenu(false);
-    setShowCancelPopup(true);
+    setShowCancelPopup(true); // Open the cancel reason popup
   };
 
-  const handleCancelConfirm = () => {
-    alert(`Event Cancelled. Reason: ${cancelReason}`);
-    setShowCancelPopup(false);
-  };
-
+  // Handle chat initiation
   const handleChat = () => {
     alert("Chat Started");
     setShowActionsMenu(false);
   };
 
+  // Handle click outside to close dropdown menu
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -58,93 +59,77 @@ const EventCard = ({ event }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  const handleMakePayment = () => {
-    setShowPaymentPopup(true);
-  };
 
-  // Closes Payment Popup
-  const handleClosePaymentPopup = () => {
-    setShowPaymentPopup(false);
-  };
-  const handleConfirmPayment = () => {
-    alert("Payment Confirmed!");
-    setShowPaymentPopup(false); // Close the payment popup after confirmation
-  };
+  const {
+    eventType = "Untitled Event",
+    artistName = "No Artist",
+    date = "No Date",
+    time = "No Time",
+    venue = "No Venue",
+    eventCompleted = "Unknown",
+  } = event;
 
   return (
     <div
       className="event-card"
       onClick={(e) => {
-        e.stopPropagation(); // Prevent event bubbling
+        e.stopPropagation();
         setShowModal(true);
       }}
     >
-      {/* Booking Status */}
-      <div className={`booking-status ${event.bookingStatus.toLowerCase()}`}>
-        {event.bookingStatus}
+      {/* Event Status */}
+      <div
+        className={`booking-status ${
+          event.eventCompleted ? "completed" : "not-completed"
+        }`}
+      >
+        {event.eventCompleted ? "Completed" : "Not Completed"}
       </div>
-
       {/* Three-dot menu */}
       <div
         ref={menuRef}
         className="menu-icon"
-        onClick={(e) => {
-          e.stopPropagation();
-          handleToggleActionsMenu();
-        }}
+        onClick={handleToggleActionsMenu}
       >
         <FontAwesomeIcon icon={faEllipsisV} />
       </div>
-
       {/* Divider */}
       <div className="divider"></div>
-
       {/* Event Title */}
       <div className="event-header">
-        <h3>{event.title}</h3>
+        <h3>{eventType}</h3>
       </div>
-
       {/* Artist Info */}
       <div className="artist-info">
-        <FontAwesomeIcon icon={faUser} className="event-icon" />
-        <span>{event.bookedArtists.join(", ")}</span>
+        <FontAwesomeIcon icon={faMapMarkerAlt} className="event-icon" />
+        <span>{artistName}</span>
       </div>
-
       {/* Event Details */}
       <div className="event-details">
         <div className="event-info">
           <FontAwesomeIcon icon={faCalendarDay} className="event-icon" />
-          <span>{event.date}</span>
+          <span>{date}</span>
         </div>
         <div className="event-info">
           <FontAwesomeIcon icon={faClock} className="event-icon" />
-          <span>{event.time}</span>
+          <span>{time}</span>
         </div>
         <div className="event-info">
           <FontAwesomeIcon icon={faMapMarkerAlt} className="event-icon" />
-          <span>{event.venue}</span>
+          <span>{venue}</span>
         </div>
+        {/* Payment Status */}
+        Payment:
+        <span className="payment-status">{`${
+          event.bookingStatus ? "Done" : "Not Done"
+        }`}</span>
       </div>
-
-      {/* Payment Status */}
-      <div className="payment-status">
-        <span>{`Payment: ${event.paymentStatus}`}</span>
-      </div>
-
       {/* Dropdown Menu */}
       {showActionsMenu && (
         <div ref={dropdownRef} className="drop-down-content">
           <button
             onClick={(e) => {
-              e.stopPropagation(); // Prevent modal from opening
-              handleCancel();
-            }}
-          >
-            <FontAwesomeIcon icon={faBan} className="dropdown-icon" /> Cancel
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent modal from opening
+              e.stopPropagation();
               handleChat();
             }}
           >
@@ -152,48 +137,17 @@ const EventCard = ({ event }) => {
           </button>
         </div>
       )}
-
-      {/* Cancel Popup */}
+      {/* Cancel Reason Popup */}
       {showCancelPopup && (
-        <div
-          className="cancel-popup"
-          onClick={(e) => e.stopPropagation()} // Prevent bubbling to parent
-        >
-          <div className="cancel-popup-content">
-            <h3>Cancel Event</h3>
-            <textarea
-              placeholder="Please provide a reason for cancellation..."
-              value={cancelReason}
-              onChange={(e) => setCancelReason(e.target.value)}
-            />
-            <button
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent modal opening when clicking confirm
-                handleCancelConfirm();
-              }}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
+        <CancelReasonPopup
+          cancellationReason={cancelReason}
+          setCancellationReason={setCancelReason}
+          onConfirmCancel={handleCancel}
+          onClose={() => setShowCancelPopup(false)}
+        />
       )}
-
       {/* Modal */}
-      {showModal && (
-        <EventModal
-          event={event}
-          onClose={handleCloseModal}
-          onMakePayment={handleMakePayment}
-        />
-      )}
-      {/* Payment Popup */}
-      {showPaymentPopup && (
-        <PaymentPopup
-          booking={event}
-          onClose={handleClosePaymentPopup}
-          onConfirm={handleConfirmPayment}
-        />
-      )}
+      {showModal && <EventModal event={event} onClose={handleCloseModal} />}
     </div>
   );
 };

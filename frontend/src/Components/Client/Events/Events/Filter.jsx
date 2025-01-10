@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Filter.css'; // Import CSS for filter styles
 
-const Filter = () => {
+const Filter = ({ onApplyFilters }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -24,9 +24,16 @@ const Filter = () => {
   };
 
   const applyFilters = () => {
-    // Logic to apply the filters (you can pass them to a parent component or update the state)
-    console.log('Filters applied:', { selectedStatus, dateRange, paymentStatus });
+    // Pass filters to parent component for processing
+    onApplyFilters({ selectedStatus, dateRange, paymentStatus });
     setIsOpen(false);
+  };
+
+  const resetFilters = () => {
+    setSelectedStatus('');
+    setDateRange({ start: '', end: '' });
+    setPaymentStatus('');
+    onApplyFilters({ selectedStatus: '', dateRange: { start: '', end: '' }, paymentStatus: '' });
   };
 
   return (
@@ -37,13 +44,12 @@ const Filter = () => {
 
       {isOpen && (
         <div className="filter-dropdown">
-          {/* Filter Title and Close Button */}
           <div className="filter-header">
             <h3>Filter Events</h3>
             <button className="close-btn" onClick={() => setIsOpen(false)}>X</button>
           </div>
 
-          {/* Filter Sections */}
+          {/* Filter Options */}
           <div className="filter-section">
             <div className="filter-category">
               <h4>Status Filter</h4>
@@ -86,14 +92,9 @@ const Filter = () => {
             </div>
           </div>
 
-          {/* Apply and Reset Buttons */}
           <div className="filter-actions">
             <button className="apply-btn" onClick={applyFilters}>Apply Filters</button>
-            <button className="reset-btn" onClick={() => {
-              setSelectedStatus('');
-              setDateRange({ start: '', end: '' });
-              setPaymentStatus('');
-            }}>Reset</button>
+            <button className="reset-btn" onClick={resetFilters}>Reset</button>
           </div>
         </div>
       )}

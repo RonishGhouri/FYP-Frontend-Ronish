@@ -1,6 +1,18 @@
-.payment-methods {
-    padding: 20px;
+.payment-tabs {
+    position: fixed;
+    top: 0; /* Stick to the top */
+    left: 0; /* Stick to the left */
+    width: 100%; /* Full width */
+    background: white; /* Background to avoid content overlap */
+    z-index: 1000; /* Keep above other elements */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Shadow for separation */
+    padding: 10px 20px; /* Spacing */
 }
+
+.payment-methods {
+    padding: 0 20px; /* Add top padding to avoid overlap with fixed tabs */
+}
+
 
 .methods-header {
     display: flex;

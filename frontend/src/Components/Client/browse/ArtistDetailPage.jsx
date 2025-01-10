@@ -38,19 +38,10 @@ function ArtistDetailPage({ artist, onClose }) {
       const clientSnapshot = await getDoc(clientRef);
 
       const clientData = clientSnapshot.exists()
-        ? {
-            ...clientSnapshot.data(),
-            name:
-              clientSnapshot.data()?.name ||
-              auth.currentUser?.displayName ||
-              "Client", // Ensure valid name
-            profilePicture:
-              clientSnapshot.data()?.profilePicture ||
-              "default-client-avatar.png", // Default avatar
-          }
+        ? clientSnapshot.data()
         : {
-            name: auth.currentUser?.displayName || "Client", // Fallback to auth displayName or "Client"
-            profilePicture: "default-client-avatar.png", // Default avatar
+            name: auth.currentUser?.displayName || "Client", // Fallback to Firebase Auth's displayName or "Client"
+            profilePicture: "default-client-avatar.png", // Fallback to default avatar
           };
 
       // Fetch artist details from Firestore
@@ -58,19 +49,12 @@ function ArtistDetailPage({ artist, onClose }) {
       const artistSnapshot = await getDoc(artistRef);
 
       const artistData = artistSnapshot.exists()
-        ? {
-            ...artistSnapshot.data(),
-            name: artistSnapshot.data()?.name || artist.name || "Artist", // Ensure valid name
-            profilePicture:
-              artistSnapshot.data()?.profilePicture ||
-              "default-artist-avatar.png", // Default avatar
-          }
+        ? artistSnapshot.data()
         : {
-            name: artist.name || "Artist", // Fallback to artist prop or "Artist"
-            profilePicture: "default-artist-avatar.png", // Default avatar
+            name: artist.name || "Artist", // Use artist name or fallback
+            avatar: "default-artist-avatar.png", // Default avatar
           };
 
-      // Fetch or create the chat
       const chatSnapshot = await getDoc(chatDoc);
 
       if (!chatSnapshot.exists()) {
@@ -78,13 +62,13 @@ function ArtistDetailPage({ artist, onClose }) {
           id: chatId,
           client: {
             id: clientId,
-            name: clientData.name, // Guaranteed valid name
-            avatar: clientData.profilePicture,
+            name: clientData.name || "Unknown Client", // Ensure valid name
+            avatar: clientData.profilePicture || "default-client-avatar.png", // Ensure valid avatar
           },
           artist: {
             id: artist.id,
-            name: artistData.name, // Guaranteed valid name
-            avatar: artistData.profilePicture,
+            name: artistData.name || "Unknown Artist", // Ensure valid name
+            avatar: artistData.profilePicture || "default-artist-avatar.png", // Ensure valid avatar
           },
           clientMessages: [],
           artistMessages: [],
@@ -92,12 +76,10 @@ function ArtistDetailPage({ artist, onClose }) {
           deletedByClient: false,
           deletedByArtist: false,
           clientOnline: true,
+          artistOnline: true,
+          artistTyping: false,
+          clientTyping: false,
         };
-
-        // Validate newChatData before writing to Firestore
-        if (!newChatData.client.name || !newChatData.artist.name) {
-          throw new Error("Client or Artist name is missing.");
-        }
 
         await setDoc(chatDoc, newChatData);
       }

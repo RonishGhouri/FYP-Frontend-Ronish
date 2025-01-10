@@ -1,15 +1,19 @@
 import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDay, faClock, faMapMarkerAlt, faMusic, faCheckCircle, faExclamationCircle, faHourglassHalf, faPlayCircle } from "@fortawesome/free-solid-svg-icons";
-import "./EventDetailsPopup.css"; 
+import { faCalendarDay, faClock, faMapMarkerAlt, faMusic, faCheckCircle, faExclamationCircle, faHourglassHalf, faPlayCircle, faTimes } from "@fortawesome/free-solid-svg-icons";
+import "./EventDetailsPopup.css";
 
 const EventDetailsPopup = ({ event, onClose }) => {
   return (
     <div className="popup-overlay">
       <div className="popup">
         <div className="popup-header">
-          <h2>{event.title}</h2>
-          <button className="popup-close" onClick={onClose}>X</button>
+          <h2>{event.title || "Event Details"}</h2>
+          <FontAwesomeIcon
+            icon={faTimes}
+            className="popup-close"
+            onClick={onClose}
+          />
         </div>
 
         <div className="popup-body">
@@ -28,10 +32,10 @@ const EventDetailsPopup = ({ event, onClose }) => {
             </div>
             <div className="event-detail">
               <FontAwesomeIcon icon={faMusic} className="event-icon" />
-              <p><strong>Artists:</strong> {event.bookedArtists.join(", ")}</p>
+              <p><strong>Artists:</strong> {event.bookedArtists?.join(", ") || "No artists listed"}</p>
             </div>
             <div className="event-detail">
-              <p><strong>Description:</strong> {event.description}</p>
+              <p><strong>Description:</strong> {event.description || "No description available."}</p>
             </div>
             <button className="make-payment-btn">Make Payment</button>
           </div>

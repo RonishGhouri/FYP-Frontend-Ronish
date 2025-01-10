@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { FaTrash, FaStar, FaUniversity } from "react-icons/fa";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { db } from "../../firebaseConfig";
-import "./paymentMethods.css";
+import React, { useState, useEffect } from 'react';
+import { FaTrash, FaStar, FaUniversity } from 'react-icons/fa';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../../../firebaseConfig';
+import { getAuth } from 'firebase/auth'; // Import Firebase Auth
+import './artistPaymentMethods.css';
 
-const PaymentMethods = () => {
+const ArtistPaymentMethods = () => {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState('');
   const [formData, setFormData] = useState({
-    accountNumber: "",
-    accountTitle: "",
-    phoneNumber: "",
+    accountNumber: '',
+    accountTitle: '',
+    phoneNumber: '',
   });
-  const [clientId, setClientId] = useState(null);
+  const [artistId, setArtistId] = useState(null); // Store authenticated artist ID
 
-  // Fetch authenticated client ID
+  // Fetch authenticated artist ID on component load
   useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;
 
     if (user) {
-      setClientId(user.uid); // Set the authenticated client's UID
+      setArtistId(user.uid); // Set the authenticated artist's UID
     } else {
-      console.error("User not authenticated");
+      console.error('User not authenticated');
     }
   }, []);
 
@@ -32,8 +32,8 @@ const PaymentMethods = () => {
   useEffect(() => {
     const fetchPaymentMethods = async () => {
       try {
-        if (!clientId) return;
-        const docRef = doc(db, "paymentMethods", clientId);
+        if (!artistId) return;
+        const docRef = doc(db, 'paymentMethods', artistId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -42,57 +42,44 @@ const PaymentMethods = () => {
           setPaymentMethods([]);
         }
       } catch (error) {
-        console.error("Error fetching payment methods:", error);
+        console.error('Error fetching payment methods:', error);
       }
     };
 
     fetchPaymentMethods();
-  }, [clientId]);
+  }, [artistId]);
 
-  const paymentOptions = [
-    {
-      id: "jazzcash",
-      name: "JazzCash",
-      imgSrc:
-        "https://seeklogo.com/images/J/jazz-cash-logo-829841352F-seeklogo.com.png",
-    },
-    {
-      id: "easypaisa",
-      name: "EasyPaisa",
-      imgSrc:
-        "https://websol.biz/wp-content/uploads/2020/09/jazzcash_small-removebg-preview.png",
-    },
-    {
-      id: "bank",
-      name: "Bank Account",
-      icon: <FaUniversity className="method-icon" />,
-    },
-  ];
+  // Check if a payment method is already added
+  const isMethodAdded = (methodId) => {
+    return paymentMethods.some((method) => method.type === methodId);
+  };
 
+  // Select payment method
   const handleMethodSelect = (methodId) => {
     setSelectedMethod(methodId);
     setFormData({
-      accountNumber: "",
-      accountTitle: "",
-      phoneNumber: "",
+      accountNumber: '',
+      accountTitle: '',
+      phoneNumber: '',
     });
   };
 
+  // Add payment method to Firestore
   const handleAddMethod = async (e) => {
     e.preventDefault();
-    if (!clientId) {
-      console.error("Client ID is not available");
+    if (!artistId) {
+      console.error('Artist ID is not available');
       return;
     }
 
     const newMethod = {
       type: selectedMethod,
-      isDefault: paymentMethods.length === 0,
+      isDefault: paymentMethods.length === 0, // First method is default
       ...formData,
     };
 
     try {
-      const docRef = doc(db, "paymentMethods", clientId);
+      const docRef = doc(db, 'paymentMethods', artistId);
       const docSnap = await getDoc(docRef);
 
       const updatedMethods = docSnap.exists()
@@ -104,10 +91,11 @@ const PaymentMethods = () => {
       setShowAddForm(false);
       resetForm();
     } catch (error) {
-      console.error("Error adding payment method:", error);
+      console.error('Error adding payment method:', error);
     }
   };
 
+  // Set default payment method in Firestore
   const handleSetDefault = async (id) => {
     try {
       const updatedMethods = paymentMethods.map((method) => ({
@@ -115,69 +103,66 @@ const PaymentMethods = () => {
         isDefault: method.type === id,
       }));
 
-      const docRef = doc(db, "paymentMethods", clientId);
+      const docRef = doc(db, 'paymentMethods', artistId);
       await updateDoc(docRef, { methods: updatedMethods });
       setPaymentMethods(updatedMethods);
     } catch (error) {
-      console.error("Error setting default method:", error);
+      console.error('Error setting default method:', error);
     }
   };
 
+  // Delete payment method from Firestore
   const handleDelete = async (id) => {
     try {
       const updatedMethods = paymentMethods.filter((method) => method.type !== id);
-      const docRef = doc(db, "paymentMethods", clientId);
+      const docRef = doc(db, 'paymentMethods', artistId);
 
       await updateDoc(docRef, { methods: updatedMethods });
       setPaymentMethods(updatedMethods);
     } catch (error) {
-      console.error("Error deleting payment method:", error);
+      console.error('Error deleting payment method:', error);
     }
   };
 
+  // Reset form
   const resetForm = () => {
-    setSelectedMethod("");
+    setSelectedMethod('');
     setFormData({
-      accountNumber: "",
-      accountTitle: "",
-      phoneNumber: "",
+      accountNumber: '',
+      accountTitle: '',
+      phoneNumber: '',
     });
   };
 
+  // Toggle add form visibility
   const toggleAddForm = () => {
     setShowAddForm((prev) => {
-      if (!prev) {
-        resetForm(); // Reset form when opening the form
-      }
+      if (!prev) resetForm();
       return !prev;
     });
   };
 
+  // Get method icon or image
   const getIcon = (type) => {
     const paymentOption = paymentOptions.find((opt) => opt.id === type);
     if (paymentOption.imgSrc) {
-      return (
-        <img
-          src={paymentOption.imgSrc}
-          alt={paymentOption.name}
-          className="method-image"
-        />
-      );
+      return <img src={paymentOption.imgSrc} alt={paymentOption.name} className="method-image" />;
     }
     return paymentOption.icon;
   };
 
+  // Display method details
   const getMethodDetails = (method) => {
     switch (method.type) {
-      case "jazzcash":
-      case "easypaisa":
+      case 'jazzcash':
+      case 'easypaisa':
         return (
           <>
             <p>{method.accountTitle}</p>
             <p>Phone: {method.phoneNumber}</p>
           </>
         );
-      case "bank":
+      case 'bank':
         return (
           <>
             <p>{method.accountTitle}</p>
@@ -189,12 +174,30 @@ const PaymentMethods = () => {
     }
   };
 
+  const paymentOptions = [
+    {
+      id: 'jazzcash',
+      name: 'JazzCash',
+      imgSrc: 'https://seeklogo.com/images/J/jazz-cash-logo-829841352F-seeklogo.com.png',
+    },
+    {
+      id: 'easypaisa',
+      name: 'EasyPaisa',
+      imgSrc: 'https://websol.biz/wp-content/uploads/2020/09/jazzcash_small-removebg-preview.png',
+    },
+    {
+      id: 'bank',
+      name: 'Bank Account',
+      icon: <FaUniversity className="method-icon" />,
+    },
+  ];
+
   return (
-    <div className="payment-methods">
+    <div className="artist-payment-methods">
       <div className="methods-header">
         <h2>Payment Methods</h2>
         <button className="add-method-btn" onClick={toggleAddForm}>
-          {showAddForm ? "Close" : "Add New Method"}
+          {showAddForm ? 'Close' : 'Add New Method'}
         </button>
       </div>
 
@@ -205,9 +208,7 @@ const PaymentMethods = () => {
             <div className="card-info">
               {getIcon(method.type)}
               <div className="card-details">
-                <h3>
-                  {paymentOptions.find((opt) => opt.id === method.type)?.name}
-                </h3>
+                <h3>{method.type}</h3>
                 {getMethodDetails(method)}
               </div>
             </div>
@@ -219,14 +220,14 @@ const PaymentMethods = () => {
               )}
               {!method.isDefault && (
                 <button
-                  className="set-default-btn"
+                  className="artist-set-default-btn"
                   onClick={() => handleSetDefault(method.type)}
                 >
                   Set Default
                 </button>
               )}
               <button
-                className="delete-btn"
+                className="artist-delete-btn"
                 onClick={() => handleDelete(method.type)}
               >
                 <FaTrash />
@@ -247,9 +248,7 @@ const PaymentMethods = () => {
                   key={option.id}
                   className="payment-option-btn"
                   onClick={() => handleMethodSelect(option.id)}
-                  disabled={paymentMethods.some(
-                    (method) => method.type === option.id
-                  )} // Disable if already added
+                  disabled={isMethodAdded(option.id)} // Disable if method is already added
                 >
                   {getIcon(option.id)}
                   <span>{option.name}</span>
@@ -258,22 +257,15 @@ const PaymentMethods = () => {
             </div>
           ) : (
             <form onSubmit={handleAddMethod}>
-              <h4>
-                {paymentOptions.find((opt) => opt.id === selectedMethod)?.name}
-              </h4>
-              {selectedMethod === "bank" ? (
+              <h4>{paymentOptions.find((opt) => opt.id === selectedMethod)?.name}</h4>
+              {selectedMethod === 'bank' ? (
                 <>
                   <div className="form-group">
                     <label>Account Number</label>
                     <input
                       type="text"
                       value={formData.accountNumber}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          accountNumber: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value })}
                       placeholder="Enter account number"
                       required
                     />
@@ -283,12 +275,7 @@ const PaymentMethods = () => {
                     <input
                       type="text"
                       value={formData.accountTitle}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          accountTitle: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, accountTitle: e.target.value })}
                       placeholder="Enter account title"
                       required
                     />
@@ -301,12 +288,7 @@ const PaymentMethods = () => {
                     <input
                       type="text"
                       value={formData.phoneNumber}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          phoneNumber: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                       placeholder="03XX-XXXXXXX"
                       required
                     />
@@ -316,12 +298,7 @@ const PaymentMethods = () => {
                     <input
                       type="text"
                       value={formData.accountTitle}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          accountTitle: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, accountTitle: e.target.value })}
                       placeholder="Enter account title"
                       required
                     />
@@ -329,14 +306,8 @@ const PaymentMethods = () => {
                 </>
               )}
               <div className="form-actions">
-                <button type="submit" className="submit-btn">
-                  Add Method
-                </button>
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={toggleAddForm}
-                >
+                <button type="submit" className="submit-btn">Add Method</button>
+                <button type="button" className="cancel-btn" onClick={toggleAddForm}>
                   Cancel
                 </button>
               </div>
@@ -348,4 +319,4 @@ const PaymentMethods = () => {
   );
 };
 
-export default PaymentMethods;
+export default ArtistPaymentMethods;

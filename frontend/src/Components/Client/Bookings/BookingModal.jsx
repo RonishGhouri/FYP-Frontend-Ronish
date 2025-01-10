@@ -97,6 +97,9 @@ const BookingModal = ({ booking, onClose, onEdit, onMakePayment, artist }) => {
           deletedByClient: false,
           deletedByArtist: false,
           clientOnline: true,
+          artistOnline: true,
+          artistTyping: false,
+          clientTyping: false,
         };
 
         await setDoc(chatDoc, newChatData);
@@ -230,9 +233,13 @@ const BookingModal = ({ booking, onClose, onEdit, onMakePayment, artist }) => {
     }\nTotal Cost: Rs. ${booking.grandTotal || 0}`;
 
     if (booking.status === "Cancelled") {
-      summary += `\n\nCancellation Details:\n\nCancelled By: ${
+      summary += `\nCancellation Details:\n\nCancelled By: ${
         booking.cancelledBy || "N/A"
       }\nReason: ${booking.cancellationReason || "No reason provided"}`;
+    }
+
+    if (booking.status === "Completed" && booking.paid) {
+      summary += `\nBooking Status: ${booking.status}\nPayment Status: Paid`;
     }
 
     const lineHeight = 10;
@@ -334,14 +341,8 @@ const BookingModal = ({ booking, onClose, onEdit, onMakePayment, artist }) => {
           <strong>Event Start Date:</strong> {booking.eventStartDate}
         </p>
         <p>
-          <strong>Event End Date:</strong> {booking.eventEndDate}
-        </p>
-        <p>
           <strong>Event Starting Time:</strong>{" "}
           {formatTimeTo12Hour(booking.eventTime)}
-        </p>
-        <p>
-          <strong>Event Duration (in days):</strong> {booking.eventDaysCount}
         </p>
         <p>
           <strong>Venue:</strong> {booking.location}
@@ -351,6 +352,12 @@ const BookingModal = ({ booking, onClose, onEdit, onMakePayment, artist }) => {
         {booking.approved && (
           <p>
             <strong>Booking Status:</strong> Approved
+          </p>
+        )}
+
+        {booking.paid && booking.status === "Completed" && (
+          <p>
+            <strong>Payment Status:</strong> Paid
           </p>
         )}
 
@@ -369,9 +376,22 @@ const BookingModal = ({ booking, onClose, onEdit, onMakePayment, artist }) => {
         <div className="modal-actions">
           {booking.approved && booking.status === "Pending" && (
             <>
+              <p>
+                <strong>Artist will charge:</strong> {booking.artistCharges}
+              </p>
               <button className="payment-button" onClick={onMakePayment}>
                 Make Payment
               </button>
+              <button
+                className="cancel-button"
+                onClick={() => setShowReasonPopup(true)}
+              >
+                Cancel Booking
+              </button>
+            </>
+          )}
+          {booking.approved && (
+            <>
               <button className="chat-button" onClick={handleChatNowClick}>
                 Chat with Artist
               </button>
@@ -385,12 +405,6 @@ const BookingModal = ({ booking, onClose, onEdit, onMakePayment, artist }) => {
               </button>
               <button className="chat-button" onClick={handleChatNowClick}>
                 Chat with Artist
-              </button>
-              <button
-                className="cancel-button"
-                onClick={() => setShowReasonPopup(true)}
-              >
-                Cancel Booking
               </button>
             </>
           )}

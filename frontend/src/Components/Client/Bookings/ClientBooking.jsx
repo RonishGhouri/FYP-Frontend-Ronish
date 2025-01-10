@@ -290,9 +290,7 @@ const ClientBooking = () => {
             <PaymentPopup
               booking={selectedBooking}
               onClose={() => setShowPaymentPopup(false)}
-              onConfirm={() =>
-                handleNotification("Payment successful. Booking confirmed!")
-              }
+              
             />
           )}
 

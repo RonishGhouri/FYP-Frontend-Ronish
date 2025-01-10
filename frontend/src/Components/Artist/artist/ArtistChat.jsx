@@ -11,7 +11,7 @@ import {
   arrayUnion,
   onSnapshot,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./ArtistChat.css";
 import ArtistSidebar from "./sidebar/ArtistSidebar";
 import ArtistHeader from "./header/ArtistHeader";
@@ -30,6 +30,36 @@ const ArtistChat = () => {
   const auth = getAuth();
 
   const location = useLocation();
+
+  const manageArtistOnlineStatus = () => {
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const artistId = user.uid;
+        const artistDocRef = doc(db, "artists", artistId);
+
+        try {
+          // Set `artistOnline` to true when the user is authenticated
+          await setDoc(
+            artistDocRef,
+            { artistOnline: true },
+            { merge: true } // Merge with existing data
+          );
+
+          // Handle disconnection: set `artistOnline` to false
+          const disconnectRef = doc(db, "artists", artistId);
+          updateDoc(disconnectRef, { artistOnline: false }); // Set offline on disconnect
+        } catch (error) {
+          console.error("Error updating artist online status:", error);
+        }
+      } else {
+        console.log("User is not authenticated.");
+      }
+    });
+  };
+
+  useEffect(() => {
+    manageArtistOnlineStatus();
+  }, []);
 
   useEffect(() => {
     const fetchChats = async () => {
@@ -98,8 +128,6 @@ const ArtistChat = () => {
           setCurrentChat(chatId);
           return;
         }
-
-        
       } catch (error) {
         console.error("Error initializing chat with client:", error);
       }
@@ -122,16 +150,38 @@ const ArtistChat = () => {
     const chatDoc = doc(db, "chats", currentChat);
 
     try {
+      // Update the chat document with the new message
       await updateDoc(chatDoc, {
         artistMessages: arrayUnion(newMessageData),
         clientMessages: arrayUnion(newMessageData),
+        deletedByArtist: false,
         deletedByClient: false,
       });
 
-      setNewMessage("");
-      scrollToBottom();
+      // Fetch the artist's name
+      const artistId = auth.currentUser?.uid;
+      const artistDoc = await getDoc(doc(db, "artists", artistId));
+      const artistName = artistDoc.exists() ? artistDoc.data().name : "Artist";
+
+      // Extract the client ID from the current chat
+      const clientId = currentChat.split("_")[0]; // Assuming the chat ID format is "clientId_artistId"
+
+      // Create a notification document for the client
+      const notificationRef = doc(collection(db, "notifications"));
+      await setDoc(notificationRef, {
+        id: notificationRef.id,
+        recipientId: clientId,
+        message: `You have a message.`,
+        createdAt: new Date().toISOString(),
+        isRead: false,
+        type: "chat",
+        chatId: currentChat, // Include chat ID for easy navigation
+      });
+
+      setNewMessage(""); // Clear the input field
+      scrollToBottom(); // Scroll to the latest message
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error("Error sending message or creating notification:", error);
     }
   };
 
@@ -208,9 +258,7 @@ const ArtistChat = () => {
                       </span>
                       <span
                         className={`status-dot ${
-                          chat.status === "Online"
-                            ? "online-dot"
-                            : "offline-dot"
+                          chat.clientOnline ? "online-dot" : "offline-dot"
                         }`}
                       ></span>
                     </div>
@@ -255,8 +303,7 @@ const ArtistChat = () => {
                           ?.name || "Client"}
                       </h4>
                       <span className="online-status">
-                        {chats.find((c) => c.id === currentChat)?.status ===
-                        "Online"
+                        {chats.find((c) => c.id === currentChat)?.clientOnline
                           ? "Online"
                           : "Offline"}
                       </span>
@@ -334,4 +381,4 @@ const ArtistChat = () => {
   );
 };
 
-export default ArtistChat; 
+export default ArtistChat;

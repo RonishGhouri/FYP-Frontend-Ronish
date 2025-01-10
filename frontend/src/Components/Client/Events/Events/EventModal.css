@@ -68,6 +68,12 @@
   align-items: center; /* Vertically center the icon and text */
   margin-bottom: 10px;
 }
+.payment-status{
+  color: #2ecc71;
+}
+.confirm{
+  color: #2ecc71;
+}
 
 .artist-info, .payment-status {
   margin-bottom: 10px;

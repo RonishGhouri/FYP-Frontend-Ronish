@@ -11,7 +11,7 @@ import {
   arrayUnion,
   onSnapshot,
 } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "./ClientChat.css";
 import ClientSidebar from "./sidebar/ClientSidebar";
 import ClientHeader from "./header/ClientHeader";
@@ -31,6 +31,37 @@ const ClientChat = () => {
   const chatMenuRef = useRef(null);
   const auth = getAuth();
 
+  const manageClientOnlineStatus = () => {
+    const auth = getAuth();
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const clientId = user.uid;
+        const clientDocRef = doc(db, "chats", clientId);
+
+        try {
+          // Set `clientOnline` to true when the user is authenticated
+          await updateDoc(clientDocRef, {
+            clientOnline: true,
+          });
+
+          // Set `clientOnline` to false when the user disconnects
+          const onDisconnectRef = doc(db, "artists", clientId);
+          window.addEventListener("beforeunload", async () => {
+            await updateDoc(onDisconnectRef, { clientOnline: false });
+          });
+        } catch (error) {
+          console.error("Error updating client online status:", error);
+        }
+      } else {
+        console.log("User not authenticated.");
+      }
+    });
+  };
+
+  useEffect(() => {
+    manageClientOnlineStatus();
+  }, []);
   // Fetch chats from Firestore
   // Fetch chats from Firestore
   useEffect(() => {
@@ -109,11 +140,9 @@ const ClientChat = () => {
     initChatWithClient();
   }, [location.state, chats, currentChat]);
   const handleSendMessage = async () => {
-    // Ensure there is a valid message and chat selected
     if (!newMessage.trim() || !currentChat) return;
 
-    const chatId = lockedChatId || currentChat; // Use locked chat if available
-
+    const chatId = lockedChatId || currentChat;
     const newMessageData = {
       id: Date.now().toString(),
       sender: "Client",
@@ -130,7 +159,23 @@ const ClientChat = () => {
         clientMessages: arrayUnion(newMessageData),
         artistMessages: arrayUnion(newMessageData),
         deletedByArtist: false,
+        deletedByClient: false,
       });
+
+      // Send a notification to the artist
+      const artistId = chats.find((chat) => chat.id === currentChat)?.artist
+        ?.id;
+      if (artistId) {
+        const notificationDoc = doc(collection(db, "notifications"));
+        await setDoc(notificationDoc, {
+          recipientId: artistId,
+          type: "message",
+          message: `You have a new message from.`,
+          timestamp: new Date().toISOString(),
+          chatId, // Include chat ID for navigation
+          isRead: false,
+        });
+      }
 
       setNewMessage(""); // Clear the input field
       scrollToBottom(); // Scroll to the latest message
@@ -227,9 +272,7 @@ const ClientChat = () => {
                       </span>
                       <span
                         className={`status-dot ${
-                          chat.status === "Online"
-                            ? "online-dot"
-                            : "offline-dot"
+                          chat.artistOnline ? "online-dot" : "offline-dot"
                         }`}
                       ></span>
                     </div>
@@ -274,8 +317,7 @@ const ClientChat = () => {
                           ?.name || "Artist"}
                       </h4>
                       <span className="online-status">
-                        {chats.find((c) => c.id === currentChat)?.status ===
-                        "Online"
+                        {chats.find((c) => c.id === currentChat)?.artistOnline
                           ? "Online"
                           : "Offline"}
                       </span>
@@ -353,4 +395,3 @@ const ClientChat = () => {
 };
 
 export default ClientChat;
-

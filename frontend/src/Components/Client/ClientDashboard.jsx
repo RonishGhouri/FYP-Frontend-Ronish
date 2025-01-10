@@ -14,8 +14,8 @@ const ClientDashboard = () => {
   const [expenditureData, setExpenditureData] = useState({
     total: 12500,
     bookings: 65,
-    serviceFees: 20,
-    donations: 15,
+    platformFees: 20,
+    reverse: 15,
   });
 
   const [events] = useState([
@@ -42,11 +42,11 @@ const ClientDashboard = () => {
   const navigate = useNavigate();
 
   const expenditureDataForChart = {
-    labels: ["Bookings", "Service Fees", "Donations"],
+    labels: ["Bookings", "Platform Fees", "Reverve"],
     datasets: [
       {
         label: "Expenditure Sources",
-        data: [expenditureData.bookings, expenditureData.serviceFees, expenditureData.donations],
+        data: [expenditureData.bookings, expenditureData.serviceFees, expenditureData.reverse],
         backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
         hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
       },
@@ -74,11 +74,11 @@ const ClientDashboard = () => {
           <div className="client-card client-combined-expenditure">
             <div className="client-expenditure-overview">
               <h4>Total Expenditure</h4>
-              <p>${expenditureData.total}</p>
+              <p>Rs. {expenditureData.total}</p>
               <div className="client-expenditure-breakdown">
                 <p>Bookings: {expenditureData.bookings}%</p>
-                <p>Service Fees: {expenditureData.serviceFees}%</p>
-                <p>Donations: {expenditureData.donations}%</p>
+                <p>Platform Fees: {expenditureData.serviceFees}%</p>
+                <p>Reverse Amount: {expenditureData.donations}%</p>
               </div>
             </div>
             <div className="client-payment-methods">

@@ -15,9 +15,9 @@ const ArtistDashboard = () => {
   const [profilePic, setProfilePic] = useState("");
   const [incomeData, setIncomeData] = useState({
     total: 15480,
-    crowdfunding: 60,
-    donations: 24,
-    tickets: 16,
+    Jazzcash: 60,
+    Easypaisa: 24,
+    Bank: 16,
   });
 
   const [artistRating, setArtistRating] = useState({
@@ -77,14 +77,14 @@ const ArtistDashboard = () => {
   const navigate = useNavigate();
 
   const paymentData = {
-    labels: ["Crowdfunding", "Donations", "Tickets"],
+    labels: ["Jazzcash", "Easypaisa", "Bank"],
     datasets: [
       {
         label: "Payment Sources",
         data: [
-          incomeData.crowdfunding,
-          incomeData.donations,
-          incomeData.tickets,
+          incomeData.Jazzcash,
+          incomeData.Easypaisa,
+          incomeData.Bank,
         ],
         backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
         hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
@@ -171,11 +171,11 @@ const ArtistDashboard = () => {
           <div className="artist-card artist-combined-earnings">
             <div className="artist-earnings-overview">
               <h4>Total Earnings</h4>
-              <p>${incomeData.total}</p>
+              <p>Rs. {incomeData.total}</p>
               <div className="artist-earnings-breakdown">
-                <p>Crowdfunding: {incomeData.crowdfunding}%</p>
-                <p>Donations: {incomeData.donations}%</p>
-                <p>Tickets: {incomeData.tickets}%</p>
+                <p>Jazzcash: {incomeData.Jazzcash}%</p>
+                <p>Eastpaisa: {incomeData.Easypaisa}%</p>
+                <p>Bank: {incomeData.Bank}%</p>
               </div>
               <div className="artist-rating">
                 <h4>Artist Rating: {artistRating.rating}/5</h4>
@@ -190,7 +190,7 @@ const ArtistDashboard = () => {
               </div>
             </div>
             <div className="artist-payment-history">
-              <h4>Payment Breakdown</h4>
+              {/* <h4>PaymentBreakdown</h4> */}
               <div className="chart-container">
                 <Pie data={paymentData} options={chartOptions} />
               </div>

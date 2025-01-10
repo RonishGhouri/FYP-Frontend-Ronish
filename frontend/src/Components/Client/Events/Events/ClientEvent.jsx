@@ -1,4 +1,13 @@
 import React, { useState, useEffect } from "react";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import ClientSidebar from "../../sidebar/ClientSidebar";
 import ClientHeader from "../../header/ClientHeader";
 import Filter from "./Filter";
@@ -7,179 +16,190 @@ import Popup from "./ListPopup";
 import Stat from "./Stat";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import EventCard from "./EventCard"; // Import EventCard
+import EventCard from "./EventCard";
 import "./ClientEvent.css";
 
-// Sample event data
-const events = [
-  {
-    id: 1,
-    title: "Event 1",
-    type: "upcoming",
-    date: "2024-12-15",
-    time: "6:00 PM",
-    venue: "Venue 1",
-    cost: 200,
-    bookedArtists: ["Artist A", "Artist D"],
-    description: "This is the description of event 1.",
-    bookingStatus: "Confirmed",
-    paymentStatus: "Completed",
-  },
-  {
-    id: 2,
-    title: "Event 2",
-    type: "upcoming",
-    date: "2024-12-20",
-    time: "8:00 PM",
-    venue: "Venue 2",
-    cost: 300,
-    bookedArtists: ["Artist B", "Artist A"],
-    description: "This is the description of event 2.",
-    bookingStatus: "Pending",
-    paymentStatus: "Pending",
-  },
-  {
-    id: 3,
-    title: "Event 3",
-    type: "past",
-    date: "2024-10-15",
-    time: "5:00 PM",
-    venue: "Venue 3",
-    cost: 150,
-    bookedArtists: ["Artist C"],
-    description: "This is the description of event 3.",
-    bookingStatus: "Completed",
-    paymentStatus: "Completed",
-  },
-  {
-    id: 4,
-    title: "Event 4",
-    type: "past",
-    date: "2024-09-20",
-    time: "7:00 PM",
-    venue: "Venue 4",
-    cost: 250,
-    bookedArtists: ["Artist D"],
-    description: "This is the description of event 4.",
-    bookingStatus: "Confirmed",
-    paymentStatus: "Completed",
-  },
-  {
-    id: 5,
-    title: "Event 5",
-    type: "past",
-    date: "2024-08-25",
-    time: "9:00 PM",
-    venue: "Venue 5",
-    cost: 100,
-    bookedArtists: ["Artist E"],
-    description: "This is the description of event 5.",
-    bookingStatus: "Pending",
-    paymentStatus: "Pending",
-  },
-  {
-    id: 6,
-    title: "Event 6",
-    type: "upcoming",
-    date: "2024-08-25",
-    time: "9:00 PM",
-    venue: "Venue 6",
-    cost: 100,
-    bookedArtists: ["Artist F"],
-    bookingStatus: "Confirmed",
-    paymentStatus: "Pending",
-  },
-  {
-    id: 7,
-    title: "Event 7",
-    type: "upcoming",
-    date: "2024-12-07",
-    time: "9:00 PM",
-    venue: "Venue 6",
-    cost: 100,
-    bookedArtists: ["Artist F"],
-    bookingStatus: "Confirmed",
-    paymentStatus: "Pending",
-  },
-];
-
 function ClientEvent() {
+  const [events, setEvents] = useState([]);
   const [activeEvent, setActiveEvent] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [popupContent, setPopupContent] = useState(null);
-  const [presentEvent, setPresentEvent] = useState(null); // Track the "present" event
+  const [presentEvents, setPresentEvents] = useState([]);
+  const [totalSpent, setTotalSpent] = useState(0);
+  const [bookedArtists, setBookedArtists] = useState([]);
 
-  const pendingEvents = events.filter(
-    (event) => event.bookingStatus === "Pending"
-  );
-  const upcomingEvents = events.filter((event) => event.type === "upcoming");
-  const pastEvents = events.filter((event) => event.type === "past");
+  const auth = getAuth();
+  const userId = auth.currentUser?.uid;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Fetch total spent by the client
+  useEffect(() => {
+    const fetchTotalSpent = async () => {
+      if (!userId) return;
+
+      const db = getFirestore();
+      const userRef = doc(db, "users", userId);
+
+      try {
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          setTotalSpent(userData.totalSpent || 0);
+        } else {
+          console.error("No such user document found.");
+        }
+      } catch (error) {
+        console.error("Error fetching totalSpent:", error);
+      }
+    };
+
+    fetchTotalSpent();
+  }, [userId]);
+
+  // Fetch events from Firebase
+  const fetchEvents = async () => {
+    const db = getFirestore();
+    const eventsCollection = collection(db, "events");
+
+    try {
+      const eventsSnapshot = await getDocs(eventsCollection);
+      const fetchedEvents = [];
+      const artistSet = new Map(); // Use a Map to store unique artists with all required fields
+
+      for (const eventDoc of eventsSnapshot.docs) {
+        const eventData = eventDoc.data();
+        const eventDate = new Date(eventData.eventStartDate);
+        eventDate.setHours(0, 0, 0, 0);
+
+        // Determine event status
+        let status = "Upcoming";
+        if (eventData.bookingStatus === "Cancelled") {
+          status = "Cancelled";
+        } else if (eventDate.getTime() === today.getTime()) {
+          status = "Present";
+        } else if (eventDate < today) {
+          status = "Past";
+        }
+
+        // Update artistSet with artist details
+        if (eventData.artistName) {
+          artistSet.set(eventData.artistName, {
+            artistName: eventData.artistName,
+            profilePicture:
+              eventData.artistProfilePicture ||
+              "https://via.placeholder.com/50",
+            eventType: eventData.eventType || "No Type",
+          });
+        }
+
+        // Update Firestore if status has changed
+        if (eventData.status !== status) {
+          await updateDoc(doc(db, "events", eventDoc.id), { status });
+        }
+
+        fetchedEvents.push({
+          id: eventDoc.id,
+          eventType: eventData.eventType || "Unknown Type",
+          artistName: eventData.artistName || "No Artist",
+          date: eventData.eventStartDate || "No Date",
+          time: eventData.eventStartTime || "No Time",
+          venue: eventData.venue || "No Venue",
+          cost: eventData.cost || 0,
+          bookingStatus: eventData.bookingStatus,
+          description: eventData.eventDetails,
+          status,
+        });
+      }
+
+      setEvents(fetchedEvents);
+      setBookedArtists(Array.from(artistSet.values())); // Convert Map values to array
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    }
+  };
 
   useEffect(() => {
-    const currentDate = new Date();
-    const currentDateString = currentDate.toISOString().split("T")[0]; // Format the date to 'YYYY-MM-DD'
+    fetchEvents();
+  }, []);
 
-    // Find today's event
-    const presentEventToday = upcomingEvents.find(
-      (event) => event.date === currentDateString
-    );
+  const upcomingEvents = events.filter(
+    (event) => event.status === "Upcoming" && new Date(event.date) > today
+  );
 
-    // If no event is found today, use the first upcoming event as fallback
-    const fallbackEvent = upcomingEvents[0] || null;
+  const pastEvents = events.filter(
+    (event) => event.status === "Past" && new Date(event.date) < today
+  );
 
-    // Set presentEvent to either today's event or the fallback
-    setPresentEvent(presentEventToday || fallbackEvent);
-  }, [upcomingEvents]);
+  const presentEventsList = events.filter((event) => {
+    const eventDate = new Date(event.date);
+    eventDate.setHours(0, 0, 0, 0); // Reset event date to midnight for comparison
+    return eventDate.getTime() === today.getTime();
+  });
+
+  const cancelledEvents = events.filter(
+    (event) => event.status === "Cancelled"
+  );
+
+  useEffect(() => {
+    setPresentEvents(presentEventsList);
+  }, [events]);
 
   const toggleEvent = (eventType) => {
     setActiveEvent(activeEvent === eventType ? null : eventType);
   };
 
-  const handleStatBlockClick = (title, description, eventType) => {
+  const handleStatBlockClick = (title, description, type) => {
     let eventList = [];
-    let isArtistPopup = false; // Default is false
-  
-    if (eventType === "upcoming") {
-      eventList = upcomingEvents;
-    } else if (eventType === "past") {
-      eventList = pastEvents;
-    } else if (eventType === "bookedArtists") {
-      isArtistPopup = true; // Enable artist-specific layout
-      eventList = upcomingEvents.filter((event) =>
-        event.bookedArtists.some((artist) => bookedArtists.includes(artist))
-      );
-    } else if (eventType === "totalSpent") {
-      eventList = events.map((event) => ({
-        title: event.title,
-        date: event.date,
-        cost: event.cost,
-      }));
-    } else {
-      eventList = events; // For total events
+
+    switch (type) {
+      case "all":
+        eventList = events;
+        break;
+      case "upcoming":
+        eventList = upcomingEvents;
+        break;
+      case "past":
+        eventList = pastEvents;
+        break;
+      case "present":
+        eventList = presentEvents;
+        break;
+      case "cancelled":
+        eventList = cancelledEvents;
+        break;
+      case "totalSpent":
+        eventList = events.map((event) => ({
+          eventType: event.eventType,
+          date: event.date,
+          cost: event.cost,
+        }));
+        break;
+      case "bookedArtists":
+        eventList = bookedArtists; // Ensure bookedArtists contains all necessary fields
+        break;
+      default:
+        break;
     }
-  
-    setPopupContent({ title, description, eventList, isArtistPopup });
+
+    setPopupContent({
+      title,
+      description,
+      eventList,
+      isArtistPopup: type === "bookedArtists",
+    });
     setShowPopup(true);
-  };  
+  };
 
   const handleClosePopup = () => {
     setShowPopup(false);
   };
-
-  // Calculate total spent for all events
-  const totalSpent = events.reduce((acc, event) => acc + event.cost, 0);
-
-  // Correct logic to get unique booked artists only from upcoming events
-  const bookedArtists = Array.from(
-    new Set(upcomingEvents.flatMap((event) => event.bookedArtists))
-  );
 
   return (
     <div className="clientEvent-dashboard">
       <ClientSidebar />
       <div className="clientEvent-main-dashboard">
         <ClientHeader />
-
         <div className="main-content">
           <div className="events-header">
             <h2 className="section-title">Events</h2>
@@ -198,48 +218,53 @@ function ClientEvent() {
             handleStatBlockClick={handleStatBlockClick}
           />
 
-          {/* Present Event Section */}
-          {presentEvent && (
-            <div
-              className={`events-bar ${
-                activeEvent === "present" ? "open" : ""
-              }`}
-              onClick={() => toggleEvent("present")}
-            >
-              <h3>
-                Present Event
-                <span className="event-count">({presentEvent.length})</span>
-              </h3>
-              <FontAwesomeIcon
-                icon={activeEvent === "present" ? faChevronUp : faChevronDown}
-                className="arrow-icon"
-              />
-            </div>
-          )}
-
-          {/* Pending Events Section */}
+          {/* Event Sections */}
           <div
-            className={`events-bar ${activeEvent === "pending" ? "open" : ""}`}
-            onClick={() => toggleEvent("pending")}
+            className={`events-bar ${activeEvent === "present" ? "open" : ""}`}
+            onClick={() => toggleEvent("present")}
           >
             <h3>
-              Pending Events{" "}
-              <span className="event-count">({pendingEvents.length})</span>
+              Present Events{" "}
+              <span className="event-count">({presentEvents.length})</span>
             </h3>
             <FontAwesomeIcon
-              icon={activeEvent === "pending" ? faChevronUp : faChevronDown}
+              icon={activeEvent === "present" ? faChevronUp : faChevronDown}
               className="arrow-icon"
             />
           </div>
-          {activeEvent === "pending" && (
+          {activeEvent === "present" && (
             <div className="events-container">
-              {pendingEvents.map((event) => (
+              {presentEvents.map((event) => (
                 <EventCard key={event.id} event={event} />
               ))}
             </div>
           )}
 
-          {/* Upcoming Events Section */}
+          {/* Cancelled Events */}
+          <div
+            className={`events-bar ${
+              activeEvent === "cancelled" ? "open" : ""
+            }`}
+            onClick={() => toggleEvent("cancelled")}
+          >
+            <h3>
+              Cancelled Events{" "}
+              <span className="event-count">({cancelledEvents.length})</span>
+            </h3>
+            <FontAwesomeIcon
+              icon={activeEvent === "cancelled" ? faChevronUp : faChevronDown}
+              className="arrow-icon"
+            />
+          </div>
+          {activeEvent === "cancelled" && (
+            <div className="events-container">
+              {cancelledEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )}
+
+          {/* Upcoming Events */}
           <div
             className={`events-bar ${activeEvent === "upcoming" ? "open" : ""}`}
             onClick={() => toggleEvent("upcoming")}
@@ -261,7 +286,7 @@ function ClientEvent() {
             </div>
           )}
 
-          {/* Past Events Section */}
+          {/* Past Events */}
           <div
             className={`events-bar ${activeEvent === "past" ? "open" : ""}`}
             onClick={() => toggleEvent("past")}
@@ -284,12 +309,12 @@ function ClientEvent() {
           )}
         </div>
 
-        {/* Event Popup */}
+        {/* Popup */}
         {showPopup && popupContent && (
           <Popup
             title={popupContent.title}
             events={popupContent.eventList}
-            isArtistPopup={popupContent.isArtistPopup} // New prop for artist layout
+            isArtistPopup={popupContent.isArtistPopup}
             onClose={handleClosePopup}
           />
         )}

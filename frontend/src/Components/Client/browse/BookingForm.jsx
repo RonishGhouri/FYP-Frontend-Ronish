@@ -48,18 +48,16 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
     eventType: initialData?.eventType || "",
     customEventType: initialData?.customEventType || "",
     location: initialData?.location || "",
+    artistFee: initialData?.artistFee || artist.chargesperevent || 0, // Editable Artist Fee
   });
 
-  const [clientProfilePicture, setClientProfilePicture] = useState(null); // State for the client's profile picture
+  const [clientProfilePicture, setClientProfilePicture] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(false);
   const [unavailableDates, setUnavailableDates] = useState([]);
   const [conflictingDates, setConflictingDates] = useState([]);
   const { addBooking } = useBookings();
-
-  const artistFee = parseInt(artist.chargesperevent) || 0;
-  const totalCost = artistFee * formData.eventDates.length;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -68,7 +66,7 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
       if (user) {
         setFetchingData(true);
         try {
-          const userRef = doc(db, "users", user.uid); // Firestore reference
+          const userRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userRef);
 
           if (userDoc.exists()) {
@@ -81,7 +79,7 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
             }));
             setClientProfilePicture(
               userData.profilePicture || "default-avatar.png"
-            ); // Set profile picture
+            );
           } else {
             console.error("No user data found.");
           }
@@ -95,6 +93,7 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
 
     fetchUserData();
   }, [initialData]);
+
   useEffect(() => {
     const fetchDates = async () => {
       try {
@@ -121,8 +120,8 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
           }
         });
 
-        setUnavailableDates([...new Set(artistDates)]); // Ensure unique dates
-        setConflictingDates([...new Set(clientDates)]); // Ensure unique dates
+        setUnavailableDates([...new Set(artistDates)]);
+        setConflictingDates([...new Set(clientDates)]);
       } catch (error) {
         console.error("Error fetching dates:", error);
       }
@@ -159,17 +158,18 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
   ) => {
     try {
       await addDoc(collection(db, "notifications"), {
-        bookingId, // Optional Booking ID
-        recipientId, // Dynamic recipient ID
-        message, // Notification message
-        type, // Notification type (e.g., success, info, warning, error)
-        isRead: false, // Unread by default
-        createdAt: new Date().toISOString(), // Timestamp
+        bookingId,
+        recipientId,
+        message,
+        type,
+        isRead: false,
+        createdAt: new Date().toISOString(),
       });
     } catch (error) {
       console.error("Failed to send notification:", error);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -181,13 +181,12 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
     const sortedDates = [...formData.eventDates].sort(
       (a, b) => new Date(a) - new Date(b)
     );
-    const eventStartDate = sortedDates.length ? new Date(sortedDates[0]) : null;
 
-    const twoDaysBeforeEventStart = new Date(eventStartDate);
+    const twoDaysBeforeEventStart = new Date(sortedDates[0]);
     twoDaysBeforeEventStart.setDate(twoDaysBeforeEventStart.getDate() - 2);
 
     if (bookingId && new Date() > twoDaysBeforeEventStart) {
-      setError(
+      toast.error(
         "You cannot edit the booking less than two days before the event's start date."
       );
       setLoading(false);
@@ -197,10 +196,13 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
     setLoading(true);
 
     const user = auth.currentUser;
-
     const formattedEventTime = formatTimeTo24Hour(formData.eventTime);
 
-    const bookingData = {
+    const artistFee = parseInt(formData.artistFee); // Include updated artist fee
+    const serviceCharges = Math.ceil(artistFee * 0.05);
+    const grandTotal = artistFee + serviceCharges;
+
+    let bookingData = {
       artistId: artist.id,
       artistName: artist.name,
       artistProfilePicture: artist.profilePicture,
@@ -210,10 +212,7 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
       clientProfilePicture: clientProfilePicture,
       eventDetails: formData.eventDetails,
       eventDates: sortedDates,
-      eventDaysCount: sortedDates.length,
-      eventStartDate: sortedDates.length > 0 ? sortedDates[0] : null,
-      eventEndDate:
-        sortedDates.length > 0 ? sortedDates[sortedDates.length - 1] : null,
+      eventStartDate: sortedDates[0] || null,
       eventTime: formattedEventTime,
       eventType:
         formData.eventType === "Other"
@@ -221,52 +220,50 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
           : formData.eventType,
       location: formData.location,
       artistCharges: artistFee,
-      totalCost,
+      serviceCharges,
       grandTotal,
       status: "Pending",
       paid: false,
       approved: false,
-      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     try {
       if (bookingId) {
         const bookingRef = doc(db, "bookings", bookingId);
-        await updateDoc(bookingRef, bookingData);
+        const bookingDoc = await getDoc(bookingRef);
+        if (!bookingDoc.exists()) {
+          setError("Booking not found.");
+          setLoading(false);
+          return;
+        }
 
-        // Send a notification to the artist about the booking update
+        await updateDoc(bookingRef, bookingData);
         await sendNotification(
-          artist.id, // Artist ID
-          `The booking for ${formData.eventDetails} has been updated by ${formData.name}.`,
+          artist.id,
+          `The booking for ${formData.eventDetails} has been updated.`,
           "info",
           bookingId
         );
-
         toast.success("Booking updated successfully.");
       } else {
         const bookingRef = await addDoc(
           collection(db, "bookings"),
           bookingData
         );
-
-        const newBookingId = bookingRef.id;
-
-        addBooking({ ...bookingData, id: newBookingId });
-
-        // Send a notification to the artist about the new booking
+        addBooking({ ...bookingData, id: bookingRef.id });
         await sendNotification(
-          artist.id, // Artist ID
-          `You have a new booking request for ${formData.eventDetails} from ${formData.name}.`,
-          "success",
-          newBookingId
+          artist.id,
+          `You have a new booking request for ${formData.eventDetails}.`,
+          "success"
         );
-
         toast.success(`Your booking request has been sent to ${artist.name}.`);
       }
 
       onClose();
     } catch (error) {
-      setError(`Failed to book ${artist.name}. Please try again.`);
+      console.error("Error in handleSubmit:", error);
+      setError(`Failed to submit booking. ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -286,23 +283,13 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
     }));
   };
 
-  const eventStartDate = formData.eventDates.length
-    ? formData.eventDates[0]
-    : "Not selected yet";
-  const eventEndDate = formData.eventDates.length
-    ? formData.eventDates[formData.eventDates.length - 1]
-    : "Not selected yet";
-  const eventDaysCount = formData.eventDates.length;
-
-  const serviceChargeRate = 0.05; // 5% service charge
-  const serviceCharges = Math.ceil(totalCost * serviceChargeRate); // Calculate service charges
-  const grandTotal = totalCost + serviceCharges; // Calculate grand total (artist fees + service charges)
-
-  const safeInitialData = initialData || { eventDates: [] }; // Default fallback
+  const safeInitialData = initialData || { eventDates: [] };
 
   const filteredUnavailableDates = unavailableDates.filter(
     (date) => !safeInitialData.eventDates.includes(date)
   );
+  const serviceCharges = Math.ceil(formData.artistFee * 0.05); // Recalculate service charges
+  const grandTotal = parseInt(formData.artistFee) + serviceCharges; // Recalculate grand total
 
   return (
     <div className="booking-form-overlay">
@@ -343,38 +330,31 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
                 />
               </div>
               <div className="form-group">
+                <label>Artist Fee (Per Event)</label>
+                <input
+                  type="number"
+                  value={formData.artistFee}
+                  onChange={(e) =>
+                    setFormData({ ...formData, artistFee: e.target.value })
+                  }
+                  name="artistFee"
+                  required
+                />
+              </div>
+              <div className="form-group">
                 <label>Event Type</label>
-                <select
+                <input
+                  type="text"
                   name="eventType"
                   value={formData.eventType}
                   onChange={(e) =>
                     setFormData({ ...formData, eventType: e.target.value })
                   }
+                  placeholder="Enter Event Type (e.g., Wedding, Birthday)"
                   required
-                >
-                  <option value="">Select Event Type</option>
-                  <option value="Wedding">Wedding</option>
-                  <option value="Birthday">Birthday</option>
-                  <option value="Concert">Concert</option>
-                  <option value="Other">Other</option>
-                </select>
+                />
               </div>
-              {formData.eventType === "Other" && (
-                <div className="form-group">
-                  <label>Custom Event Type</label>
-                  <input
-                    type="text"
-                    value={formData.customEventType}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        customEventType: e.target.value,
-                      })
-                    }
-                    placeholder="Specify Event Type"
-                  />
-                </div>
-              )}
+
               <div className="form-group">
                 <label>Event Details</label>
                 <textarea
@@ -392,21 +372,17 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
                 <div className="styled-calendar-input">
                   <Calendar
                     multiple
-                    value={formData.eventDates.map((date) => new Date(date))} // Prefill selected dates
+                    value={formData.eventDates.map((date) => new Date(date))}
                     minDate={
-                      bookingId
-                        ? new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) // Allow future dates
-                        : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) // Two days from today
+                      bookingId ? new Date(Date.now()) : new Date(Date.now())
                     }
-                    onChange={handleDateChange} // Handles changes properly
+                    onChange={handleDateChange}
                     mapDays={({ date }) => {
                       const jsDate =
                         date instanceof Date ? date : new Date(date);
                       const formattedDate = jsDate.toLocaleDateString("en-CA");
 
-                      // For editing existing bookings
                       if (bookingId) {
-                        // Enable fetched dates even if they are unavailable
                         if (formData.eventDates.includes(formattedDate)) {
                           return {
                             style: {
@@ -417,7 +393,6 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
                           };
                         }
 
-                        // Allow future dates for selection
                         if (
                           jsDate >= new Date() &&
                           !filteredUnavailableDates.includes(formattedDate)
@@ -430,7 +405,6 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
                           };
                         }
 
-                        // Disable other unavailable dates
                         if (
                           filteredUnavailableDates.includes(formattedDate) &&
                           !formData.eventDates.includes(formattedDate)
@@ -442,7 +416,6 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
                           };
                         }
                       } else {
-                        // For new bookings
                         if (unavailableDates.includes(formattedDate)) {
                           return {
                             disabled: true,
@@ -501,7 +474,7 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
               <strong>Artist:</strong> {artist.name}
             </p>
             <p>
-              <strong>Artist Fee (Per Event):</strong> Rs. {artistFee}
+              <strong>Artist Fee (Per Event):</strong> Rs. {formData.artistFee}
             </p>
             <hr />
             <p>
@@ -518,13 +491,10 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
               <strong>Venue:</strong> {formData.location}
             </p>
             <p>
-              <strong>Event duration (in days):</strong> {eventDaysCount}
-            </p>
-            <p>
-              <strong>Event Start Date:</strong> {eventStartDate}
-            </p>
-            <p>
-              <strong>Event End Date:</strong> {eventEndDate}
+              <strong>Event Start Date:</strong>{" "}
+              {formData.eventDates.length
+                ? formData.eventDates[0]
+                : "Not selected yet"}
             </p>
             <p>
               <strong>Event Starting Time:</strong>{" "}
@@ -534,10 +504,10 @@ function BookingForm({ artist, onClose, bookingId, initialData }) {
             </p>
             <hr />
             <p>
-              <strong>Total Event Cost (TEC):</strong> Rs. {totalCost}
+              <strong>Total Event Cost (TEC):</strong> Rs. {formData.artistFee}
             </p>
             <p>
-              <strong>Service Charges (5% of TEC):</strong> Rs. {serviceCharges}
+              <strong>Platform Fees (5% of TEC):</strong> Rs. {serviceCharges}
             </p>
             <p>
               <strong>Grand Total:</strong> Rs. {grandTotal}
@@ -583,15 +553,6 @@ const styles = {
     background: "none",
     padding: "20px 40px",
     borderRadius: "8px",
-  },
-  "calendar-icon": {
-    position: "absolute",
-    right: "10px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    fontSize: "1.2rem",
-    color: "#555",
-    cursor: "pointer",
   },
 };
 
